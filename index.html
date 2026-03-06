@@ -374,7 +374,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G · C · E · A</span>
-    <span class="version-badge">v1.1.0</span>
+    <span class="version-badge">v1.2.0</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -384,7 +384,7 @@ stroke-linejoin: round;
 
 ```
 <div id="note-display">
-  <span id="note-name">—</span>
+  <span id="note-name">-</span>
   <span id="string-label">&nbsp;</span>
 </div>
 
@@ -559,7 +559,7 @@ function autoCorrelate(buf, sampleRate) {
   var rms  = 0;
   for (var i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
   rms = Math.sqrt(rms / SIZE);
-  if (rms < 0.01) return -1;
+  if (rms < 0.003) return -1;
 
   var bestOffset = -1, bestCorr = 0, lastCorr = 1;
   for (var offset = 1; offset < MAX; offset++) {
@@ -606,7 +606,7 @@ function loop() {
   analyser.getFloatTimeDomainData(buf);
   var freq = autoCorrelate(buf, audioCtx.sampleRate);
 
-  if (freq < 220 || freq > 520) {
+  if (freq < 200 || freq > 600) {
     drawMeter(smoothCents, 'idle');
     return;
   }
@@ -703,7 +703,7 @@ function playReferenceTone(idx) {
       noteNameEl.textContent    = STRINGS[currentStringIdx].note + STRINGS[currentStringIdx].octave;
       stringLabelEl.textContent = STRINGS[currentStringIdx].label.toUpperCase() + ' STRING';
     } else {
-      noteNameEl.textContent    = '\u2014';
+      noteNameEl.textContent    = '-';
       stringLabelEl.textContent = '\u00a0';
     }
     centsEl.textContent = '\u00a0';
@@ -730,41 +730,41 @@ function onStringTap(i) {
 }
 
 // ── Start / mic init ──
-startBtn.addEventListener('click', function() {
-  // Resume AudioContext on user gesture (required iOS)
-  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+function initAudio(stream) {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume().then(function() {
+    analyser         = audioCtx.createAnalyser();
+    analyser.fftSize = 4096;
+    // No filter — iOS lowpass was killing the signal needed for autocorrelation
+    var source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
 
-  navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: false,
-      noiseSuppression: false,
-      autoGainControl:  false
-    }
-  }).then(function(stream) {
-    audioCtx = ctx;
-    audioCtx.resume().then(function() {
-      analyser         = audioCtx.createAnalyser();
-      analyser.fftSize = 4096;
-
-      var filter           = audioCtx.createBiquadFilter();
-      filter.type          = 'lowpass';
-      filter.frequency.value = 600;
-
-      var source = audioCtx.createMediaStreamSource(stream);
-      source.connect(filter);
-      filter.connect(analyser);
-
-      startPrompt.classList.add('hidden');
-      tunerWrap.classList.add('active');
-      statusDot.style.backgroundColor = '#28955a';
-      drawMeter(0, 'idle');
-      loop();
-    });
-  }).catch(function() {
-    startBtn.textContent   = 'Microphone access denied';
-    startBtn.style.color   = '#eda830';
-    startBtn.style.borderColor = '#eda830';
+    startPrompt.classList.add('hidden');
+    tunerWrap.classList.add('active');
+    statusDot.style.backgroundColor = '#28955a';
+    drawMeter(0, 'idle');
+    loop();
   });
+}
+
+startBtn.addEventListener('click', function() {
+  // Try with ideal constraints first, fall back to plain true on failure
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } })
+    .then(function(stream) {
+      initAudio(stream);
+    })
+    .catch(function() {
+      // iOS may reject the constraint object — retry with minimal constraints
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+          initAudio(stream);
+        })
+        .catch(function() {
+          startBtn.textContent = 'Microphone access denied';
+          startBtn.style.color = '#eda830';
+          startBtn.style.borderColor = '#eda830';
+        });
+    });
 });
 
 // ── Tabs ──

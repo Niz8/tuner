@@ -375,7 +375,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.3.5</span>
+    <span class="version-badge">v1.4.0</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -627,7 +627,10 @@ function nearestString(freq) {
 }
 
 // ── Detection loop ──
-var SMOOTH = 0.14;
+var SMOOTH = 0.06;        // heavier smoothing — was 0.14
+var smoothFreq  = 0;      // smooth the raw frequency before converting to cents
+var stableCount = 0;      // how many frames in a row detection has agreed
+var STABLE_NEEDED = 3;    // frames needed before updating display
 
 function loop() {
   rafId = requestAnimationFrame(loop);
@@ -636,14 +639,24 @@ function loop() {
   var freq = autoCorrelate(audioCtx.sampleRate);
 
   if (freq < 200 || freq > 600) {
-    if (debugEl && freq !== -1) debugEl.textContent += ' | freq: ' + freq.toFixed(1) + ' (out of range)';
+    stableCount = 0;
     drawMeter(smoothCents, 'idle');
     return;
   }
 
   if (debugEl) debugEl.textContent += ' | freq: ' + freq.toFixed(1);
 
-  var result = nearestString(freq);
+  // Smooth the raw frequency first — this stabilizes cents calculation
+  if (smoothFreq === 0) { smoothFreq = freq; }
+  smoothFreq += (freq - smoothFreq) * 0.1;
+
+  // Only proceed if this reading is within 30Hz of smoothed (reject outliers)
+  if (Math.abs(freq - smoothFreq) > 30) { stableCount = 0; return; }
+
+  stableCount++;
+  if (stableCount < STABLE_NEEDED) return;
+
+  var result = nearestString(smoothFreq);
   var idx    = result.idx;
   var cents  = result.cents;
 

@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.3.1**
+**Version 1.3.2**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,12 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.3.2 — iOS silent buffer prime fix
+
+- Added silent 1-sample buffer playback immediately after AudioContext.resume() — iOS WebKit requires the context to produce output before a MediaStreamSource delivers real mic samples; without this the analyser receives a flat DC-offset buffer (all 128/130) regardless of what the mic picks up
+- Replaced Unicode flat (♭ U+266D) and sharp (♯ U+266F) symbols in canvas with plain ASCII `b` and `#` — Georgia on iOS cannot render these music glyphs from canvas
+- Debug panel retained from v1.3.1 for continued diagnosis
 
 ### v1.3.1 — Debug diagnostics & glyph fixes
 

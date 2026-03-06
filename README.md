@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.3.3**
+**Version 1.3.4**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,12 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.3.4 — Force iOS mic stream activation via zero-gain output routing
+
+- Debug confirmed range:4 — iOS was delivering an almost flat buffer despite mic being connected; the AudioContext was not processing the stream
+- Added zero-gain node (gain: 0.0001) routing mic source → destination in parallel with the analyser connection; iOS requires the mic graph to have an active output path to deliver real samples to any connected node
+- Removed default hyphen from note-name element — Georgia renders plain `-` as an apostrophe glyph at large sizes on iOS
 
 ### v1.3.3 — Deeper debug & relaxed detection thresholds
 

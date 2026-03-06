@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.2.0**
+**Version 1.3.0**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,12 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.3.0 — Pitch detection iOS fix & comma glyphs
+
+- Switched from `getFloatTimeDomainData` (Float32Array) to `getByteTimeDomainData` (Uint8Array) — iOS WebKit can return a flat/silent float buffer even when audio is flowing; the byte API has solid iOS support
+- Converted Uint8 values (0–255, center 128) to float (-1 to +1) before correlation
+- Removed `&nbsp;` from string-label and cents-display elements — was rendering as a visible comma glyph in Georgia on iOS
 
 ### v1.2.0 — iOS pitch detection fix
 

@@ -374,7 +374,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G · C · E · A</span>
-    <span class="version-badge">v1.2.0</span>
+    <span class="version-badge">v1.3.0</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -385,12 +385,12 @@ stroke-linejoin: round;
 ```
 <div id="note-display">
   <span id="note-name">-</span>
-  <span id="string-label">&nbsp;</span>
+  <span id="string-label"></span>
 </div>
 
 <div id="meter-wrap">
   <canvas id="meter-canvas" width="680" height="200"></canvas>
-  <div id="cents-display">&nbsp;</div>
+  <div id="cents-display"></div>
 </div>
 
 <div id="strings"></div>
@@ -552,37 +552,53 @@ function drawMeter(cents, state) {
 
 drawMeter(0, 'idle');
 
-// ── Autocorrelation pitch detection ──
-function autoCorrelate(buf, sampleRate) {
-  var SIZE = buf.length;
-  var MAX  = Math.floor(SIZE / 2);
-  var rms  = 0;
-  for (var i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+// ── Autocorrelation pitch detection (Uint8 — wider iOS WebKit support) ──
+function autoCorrelate(sampleRate) {
+  var SIZE = analyser.fftSize;
+  var buf  = new Uint8Array(SIZE);
+  analyser.getByteTimeDomainData(buf);
+
+  // Convert to float centered on zero
+  var float = new Float32Array(SIZE);
+  var rms = 0;
+  for (var i = 0; i < SIZE; i++) {
+    float[i] = (buf[i] - 128) / 128;
+    rms += float[i] * float[i];
+  }
   rms = Math.sqrt(rms / SIZE);
   if (rms < 0.003) return -1;
 
+  var MAX = Math.floor(SIZE / 2);
   var bestOffset = -1, bestCorr = 0, lastCorr = 1;
+
   for (var offset = 1; offset < MAX; offset++) {
     var corr = 0;
-    for (var j = 0; j < MAX; j++) corr += Math.abs(buf[j] - buf[j + offset]);
+    for (var j = 0; j < MAX; j++) {
+      corr += Math.abs(float[j] - float[j + offset]);
+    }
     corr = 1 - corr / MAX;
-    if (corr > 0.9 && corr > lastCorr) { bestCorr = corr; bestOffset = offset; }
+    if (corr > 0.9 && corr > lastCorr) {
+      bestCorr = corr;
+      bestOffset = offset;
+    }
     lastCorr = corr;
   }
+
   if (bestOffset === -1) return -1;
 
-  // Parabolic interpolation
+  // Parabolic interpolation for sub-sample accuracy
   var shift = 0;
   if (bestOffset > 1 && bestOffset < MAX - 1) {
     var acf = function(o) {
       var s = 0;
-      for (var k = 0; k < MAX; k++) s += Math.abs(buf[k] - buf[k + o]);
+      for (var k = 0; k < MAX; k++) s += Math.abs(float[k] - float[k + o]);
       return 1 - s / MAX;
     };
     var y1 = acf(bestOffset - 1), y2 = bestCorr, y3 = acf(bestOffset + 1);
     var denom = 2 * (2 * y2 - y1 - y3);
     if (denom !== 0) shift = (y3 - y1) / denom;
   }
+
   return sampleRate / (bestOffset + shift);
 }
 
@@ -602,9 +618,7 @@ function loop() {
   rafId = requestAnimationFrame(loop);
   if (!analyser || isPlaying) return;
 
-  var buf = new Float32Array(analyser.fftSize);
-  analyser.getFloatTimeDomainData(buf);
-  var freq = autoCorrelate(buf, audioCtx.sampleRate);
+  var freq = autoCorrelate(audioCtx.sampleRate);
 
   if (freq < 200 || freq > 600) {
     drawMeter(smoothCents, 'idle');
@@ -778,4 +792,4 @@ for (var ti = 0; ti < tabs.length; ti++) {
 </script>
 
 </body>
-</html> 
+</html>

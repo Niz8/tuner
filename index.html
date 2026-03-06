@@ -373,8 +373,8 @@ stroke-linejoin: round;
 <header>
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
-    <span class="tuning-label">G · C · E · A</span>
-    <span class="version-badge">v1.3.0</span>
+    <span class="tuning-label">G . C . E . A</span>
+    <span class="version-badge">v1.3.1</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -394,12 +394,14 @@ stroke-linejoin: round;
 </div>
 
 <div id="strings"></div>
+
+<div id="debug" style="font-family:'Courier New',monospace;font-size:0.55rem;color:#65605a;text-align:center;line-height:1.8;letter-spacing:0.06em;"></div>
 ```
 
   </div>
 </main>
 
-<div id="disclaimer">vibecoded · use at your own risk</div>
+<div id="disclaimer">vibecoded . use at your own risk</div>
 
 <nav id="tabs">
   <div class="tab active" data-tab="tuner">
@@ -552,6 +554,8 @@ function drawMeter(cents, state) {
 
 drawMeter(0, 'idle');
 
+var debugEl = document.getElementById('debug');
+
 // ── Autocorrelation pitch detection (Uint8 — wider iOS WebKit support) ──
 function autoCorrelate(sampleRate) {
   var SIZE = analyser.fftSize;
@@ -566,6 +570,15 @@ function autoCorrelate(sampleRate) {
     rms += float[i] * float[i];
   }
   rms = Math.sqrt(rms / SIZE);
+
+  // Debug: sample first few raw bytes and rms
+  if (debugEl) {
+    debugEl.textContent =
+      'buf[0..4]: ' + buf[0] + ' ' + buf[1] + ' ' + buf[2] + ' ' + buf[3] + ' ' + buf[4] +
+      ' | rms: ' + rms.toFixed(5) +
+      ' | sr: ' + sampleRate;
+  }
+
   if (rms < 0.003) return -1;
 
   var MAX = Math.floor(SIZE / 2);
@@ -621,9 +634,12 @@ function loop() {
   var freq = autoCorrelate(audioCtx.sampleRate);
 
   if (freq < 200 || freq > 600) {
+    if (debugEl && freq !== -1) debugEl.textContent += ' | freq: ' + freq.toFixed(1) + ' (out of range)';
     drawMeter(smoothCents, 'idle');
     return;
   }
+
+  if (debugEl) debugEl.textContent += ' | freq: ' + freq.toFixed(1);
 
   var result = nearestString(freq);
   var idx    = result.idx;

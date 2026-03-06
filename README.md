@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.0.0**
+**Version 1.1.0**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -13,16 +13,16 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 - **Auto string identification** — nearest-note detection across all four strings simultaneously; no need to select which string you’re playing
 - **Reference tones** — tap any string button to hear a ~2 second tone, then auto-resumes listening
 - **Vertical bar meter** — horizontal track with needle sliding left/right of center, colored amber (off-pitch) to green (±5 cents in tune)
-- **Per-string status** — active string highlights green; glows on in-tune
+- **Per-string status** — active string highlights; glows green when in tune, blue during reference tone playback
 - **Placeholder tabs** — Tuner / Chords / Library tabs stubbed for future features
-- **No external libraries** — pure Web Audio API, Canvas 2D, vanilla JS
+- **No external libraries or fonts** — pure Web Audio API, Canvas 2D, vanilla JS, system fonts only
 
 -----
 
 ## Usage
 
 1. Open `ukulele-tuner.html` in a browser (Chrome, Safari, Firefox, Edge)
-1. Click **Enable Microphone** and grant mic access
+1. Tap **Enable Microphone** and grant mic access
 1. Play a string — the tuner auto-identifies which string and shows cents deviation
 1. Tap a string button to hear its reference tone, then tune by ear
 
@@ -32,29 +32,30 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 
 ## Technical Notes
 
-|Detail           |Value                                        |
-|-----------------|---------------------------------------------|
-|Pitch algorithm  |Autocorrelation + parabolic interpolation    |
-|FFT buffer size  |4096 samples                                 |
-|Frequency range  |220 – 520 Hz (ukulele fundamental range)     |
-|Smoothing factor |0.14 (exponential moving average on cents)   |
-|In-tune threshold|±5 cents                                     |
-|Low-pass filter  |600 Hz (reduces room noise before analysis)  |
-|Reference tone   |Triangle wave + detuned sine layer (~1.0015×)|
+|Detail           |Value                                                           |
+|-----------------|----------------------------------------------------------------|
+|Pitch algorithm  |Autocorrelation + parabolic interpolation                       |
+|FFT buffer size  |4096 samples                                                    |
+|Frequency range  |220 – 520 Hz (ukulele fundamental range)                        |
+|Smoothing factor |0.14 (exponential moving average on cents)                      |
+|In-tune threshold|±5 cents                                                        |
+|Low-pass filter  |600 Hz (reduces room noise before analysis)                     |
+|Reference tone   |Triangle wave + detuned sine layer (~1.0015×)                   |
+|Fonts            |System fonts only (Georgia, Courier New) — no Google Fonts      |
+|Canvas rendering |No CSS variables, no `roundRect` — full iOS Safari compatibility|
+|AudioContext     |`webkitAudioContext` fallback for older iOS WebKit              |
 
 -----
 
 ## Roadmap
 
-### v1.1.0
-
-- [ ] Light / dark mode toggle with `localStorage` preference persistence
-- [ ] Version number displayed in UI footer
-- [ ] Disclaimer footer (vibecoded — use at your own risk)
-
 ### v1.2.0
 
+- [ ] Light / dark mode toggle with `localStorage` preference persistence
 - [ ] Chord diagram chart (Chords tab)
+
+### v1.3.0
+
 - [ ] Song / chord library (Library tab)
 - [ ] Alternate tunings (D · G · B · E, etc.)
 
@@ -67,6 +68,17 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.1.0 — iOS Safari compatibility & display fixes
+
+- Removed all Google Fonts; replaced with system fonts (Georgia, Courier New)
+- Removed all CSS variable usage from canvas drawing; replaced with hardcoded hex/rgba values
+- Replaced `roundRect` canvas call with plain `fillRect` for iOS Safari compatibility
+- Added `webkitAudioContext` fallback for older iOS WebKit
+- Moved `AudioContext` creation inside user gesture handler to satisfy iOS autoplay policy
+- Added `v1.1.0` version badge in header
+- Added “vibecoded · use at your own risk” disclaimer above tab bar
+- Rewrote JS loops to avoid arrow functions and `const`/`let` for maximum compatibility
 
 ### v1.0.0 — Initial release
 

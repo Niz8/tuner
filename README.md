@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.3.5**
+**Version 1.4.0**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,13 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.4.0 — Needle stabilization
+
+- Added two-stage smoothing: raw frequency smoothed at 0.1 before cents conversion, then cents smoothed at 0.06 (was 0.14) — prevents the double-jitter of noisy freq feeding into a fast-moving cents value
+- Added outlier rejection: readings more than 30 Hz from the smoothed frequency are discarded
+- Added stability gate: display only updates after 3 consecutive consistent readings — eliminates single-frame spikes
+- Reset stability counter on signal loss so the tuner re-locks cleanly on a new pluck
 
 ### v1.3.5 — Replaced correlation algorithm, fixed phantom glyphs
 

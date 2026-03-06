@@ -181,7 +181,7 @@ font-family: Georgia, serif;
 font-size: 5rem;
 font-weight: bold;
 display: block;
-min-height: 1.1em;
+height: 1.1em;
 color: #e6e2da;
 }
 
@@ -193,7 +193,8 @@ text-transform: uppercase;
 color: #65605a;
 display: block;
 margin-top: 4px;
-min-height: 1.5em;
+height: 1.5em;
+overflow: hidden;
 }
 
 /* ── Meter ── */
@@ -374,7 +375,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.3.4</span>
+    <span class="version-badge">v1.3.5</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -556,7 +557,7 @@ drawMeter(0, 'idle');
 
 var debugEl = document.getElementById('debug');
 
-// ── Autocorrelation pitch detection (Uint8 — wider iOS WebKit support) ──
+// ── Autocorrelation pitch detection ──
 function autoCorrelate(sampleRate) {
   var SIZE = analyser.fftSize;
   var buf  = new Uint8Array(SIZE);
@@ -574,52 +575,46 @@ function autoCorrelate(sampleRate) {
   // Debug: show min/max of full buffer and rms
   if (debugEl) {
     var mn = 255, mx = 0;
-    for (var d = 0; d < SIZE; d++) { if (buf[d] < mn) mn = buf[d]; if (buf[d] > mx) mx = buf[d]; }
-    debugEl.textContent =
-      'min:' + mn + ' max:' + mx + ' range:' + (mx-mn) +
-      ' | rms: ' + rms.toFixed(5) +
-      ' | sr: ' + sampleRate;
+    for (var d = 0; d < SIZE; d++) {
+      if (buf[d] < mn) mn = buf[d];
+      if (buf[d] > mx) mx = buf[d];
+    }
+    debugEl.textContent = 'min:' + mn + ' max:' + mx + ' range:' + (mx - mn) +
+      ' | rms: ' + rms.toFixed(5) + ' | sr: ' + sampleRate;
   }
 
   if (rms < 0.001) return -1;
 
-  var MAX = Math.floor(SIZE / 2);
-  var bestOffset = -1, bestCorr = 0, lastCorr = 1;
+  // Ukulele range: C4(261Hz) to A4(440Hz) with margin
+  // At 48000Hz: period of 440Hz = 109 samples, 200Hz = 240 samples
+  var minPeriod = Math.floor(sampleRate / 520);  // ~92 samples
+  var maxPeriod = Math.ceil(sampleRate / 200);   // ~240 samples
+  var MAX = Math.min(Math.floor(SIZE / 2), maxPeriod + 1);
 
-  for (var offset = 1; offset < MAX; offset++) {
-    var corr = 0;
-    for (var j = 0; j < MAX; j++) {
-      corr += Math.abs(float[j] - float[j + offset]);
+  // Build normalized autocorrelation (NSDF-style)
+  var bestOffset = -1;
+  var bestVal = -1;
+
+  for (var offset = minPeriod; offset <= MAX; offset++) {
+    var num = 0, denom = 0;
+    for (var j = 0; j < SIZE - offset; j++) {
+      num   += float[j] * float[j + offset];
+      denom += float[j] * float[j] + float[j + offset] * float[j + offset];
     }
-    corr = 1 - corr / MAX;
-    if (corr > 0.8 && corr > lastCorr) {
-      bestCorr = corr;
+    var nsdf = denom > 0 ? 2 * num / denom : 0;
+    if (nsdf > bestVal) {
+      bestVal = nsdf;
       bestOffset = offset;
     }
-    lastCorr = corr;
   }
 
-  if (bestOffset === -1) {
-    if (debugEl) debugEl.textContent += ' | no corr';
-    return -1;
+  if (debugEl) {
+    debugEl.textContent += ' | off:' + bestOffset + ' val:' + (bestVal).toFixed(3);
   }
 
-  if (debugEl) debugEl.textContent += ' | off:' + bestOffset + ' corr:' + bestCorr.toFixed(3);
+  if (bestOffset === -1 || bestVal < 0.4) return -1;
 
-  // Parabolic interpolation for sub-sample accuracy
-  var shift = 0;
-  if (bestOffset > 1 && bestOffset < MAX - 1) {
-    var acf = function(o) {
-      var s = 0;
-      for (var k = 0; k < MAX; k++) s += Math.abs(float[k] - float[k + o]);
-      return 1 - s / MAX;
-    };
-    var y1 = acf(bestOffset - 1), y2 = bestCorr, y3 = acf(bestOffset + 1);
-    var denom = 2 * (2 * y2 - y1 - y3);
-    if (denom !== 0) shift = (y3 - y1) / denom;
-  }
-
-  return sampleRate / (bestOffset + shift);
+  return sampleRate / bestOffset;
 }
 
 function nearestString(freq) {

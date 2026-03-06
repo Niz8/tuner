@@ -374,7 +374,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.3.3</span>
+    <span class="version-badge">v1.3.4</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -384,7 +384,7 @@ stroke-linejoin: round;
 
 ```
 <div id="note-display">
-  <span id="note-name">-</span>
+  <span id="note-name"></span>
   <span id="string-label"></span>
 </div>
 
@@ -740,7 +740,7 @@ function playReferenceTone(idx) {
       noteNameEl.textContent    = STRINGS[currentStringIdx].note + STRINGS[currentStringIdx].octave;
       stringLabelEl.textContent = STRINGS[currentStringIdx].label.toUpperCase() + ' STRING';
     } else {
-      noteNameEl.textContent    = '-';
+      noteNameEl.textContent    = '';
       stringLabelEl.textContent = '\u00a0';
     }
     centsEl.textContent = '\u00a0';
@@ -771,8 +771,8 @@ function initAudio(stream) {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   audioCtx.resume().then(function() {
 
-    // iOS WebKit requires AudioContext to produce output before
-    // MediaStreamSource delivers real samples. Play a silent buffer first.
+    // iOS requires AudioContext to produce output before input flows.
+    // Play a silent buffer to prime it.
     var silentBuf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
     var silent    = audioCtx.createBufferSource();
     silent.buffer = silentBuf;
@@ -781,7 +781,16 @@ function initAudio(stream) {
 
     analyser         = audioCtx.createAnalyser();
     analyser.fftSize = 4096;
+
     var source = audioCtx.createMediaStreamSource(stream);
+
+    // iOS also needs the mic source routed toward the destination
+    // (even at zero gain) to actually deliver samples to the analyser.
+    var zeroGain = audioCtx.createGain();
+    zeroGain.gain.value = 0.0001;
+    source.connect(zeroGain);
+    zeroGain.connect(audioCtx.destination);
+
     source.connect(analyser);
 
     startPrompt.classList.add('hidden');

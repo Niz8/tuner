@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.3.0**
+**Version 1.3.1**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,12 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.3.1 — Debug diagnostics & glyph fixes
+
+- Replaced Unicode middle dots (·) with plain ASCII periods — Georgia on iOS was rendering them as backtick/apostrophe glyphs
+- Added on-screen debug panel showing raw analyser buffer values, RMS level, sample rate, and detected frequency — aids iOS-specific audio diagnosis
+- Debug output appears below string buttons when mic is active
 
 ### v1.3.0 — Pitch detection iOS fix & comma glyphs
 

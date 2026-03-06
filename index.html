@@ -3,265 +3,363 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Uke Tuner</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-–bg: #141414;
-–surface: #1a1a1a;
-–border: #272727;
-–text: #e6e2da;
-–text-muted: #65605a;
-–text-dim: #353230;
-–amber: #c97c0c;
-–amber-light: #eda830;
-–green: #28955a;
-–green-light: #38c472;
-–blue: #3a7fc1;
-–blue-light: #5a9fe0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
 height: 100%;
-background: var(–bg);
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
+background-color: #141414;
+color: #e6e2da;
+font-family: Georgia, ‘Times New Roman’, serif;
 overflow: hidden;
+-webkit-user-select: none;
 user-select: none;
 }
 
 body {
+display: -webkit-flex;
 display: flex;
+-webkit-flex-direction: column;
 flex-direction: column;
+-webkit-align-items: center;
 align-items: center;
 height: 100dvh;
+height: 100vh;
 }
 
-/* Header */
+/* ── Header ── */
 header {
 width: 100%;
-padding: 18px 24px 0;
+padding: 18px 22px 0;
+display: -webkit-flex;
 display: flex;
+-webkit-align-items: baseline;
 align-items: baseline;
+-webkit-justify-content: space-between;
 justify-content: space-between;
 }
-.header-left { display: flex; align-items: baseline; gap: 10px; }
-header h1 {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.25rem;
-font-weight: 400;
-color: var(–text);
+
+.header-left {
+display: -webkit-flex;
+display: flex;
+-webkit-align-items: baseline;
+align-items: baseline;
+gap: 10px;
 }
-.version-badge {
-font-size: 0.48rem;
-color: var(–text-dim);
-letter-spacing: 0.12em;
+
+.header-title {
+font-family: Georgia, serif;
+font-size: 1.3rem;
+font-weight: normal;
+color: #e6e2da;
+letter-spacing: 0.01em;
 }
-header .tuning-label {
-font-size: 0.58rem;
-color: var(–text-muted);
+
+.tuning-label {
+font-family: ‘Courier New’, monospace;
+font-size: 0.6rem;
+color: #65605a;
 letter-spacing: 0.16em;
 text-transform: uppercase;
 }
+
+.version-badge {
+font-family: ‘Courier New’, monospace;
+font-size: 0.48rem;
+color: #353230;
+letter-spacing: 0.12em;
+}
+
 #status-dot {
-width: 6px; height: 6px;
+width: 7px;
+height: 7px;
 border-radius: 50%;
-background: var(–text-dim);
-transition: background 0.4s, box-shadow 0.4s;
+background-color: #353230;
+-webkit-transition: background-color 0.4s;
+transition: background-color 0.4s;
 flex-shrink: 0;
 }
-#status-dot.listening { background: var(–green); box-shadow: 0 0 8px var(–green); }
-#status-dot.playing   { background: var(–blue);  box-shadow: 0 0 8px var(–blue);  }
 
-/* Main */
+/* ── Main ── */
 main {
+-webkit-flex: 1;
 flex: 1;
 width: 100%;
 max-width: 480px;
+display: -webkit-flex;
 display: flex;
+-webkit-flex-direction: column;
 flex-direction: column;
+-webkit-align-items: center;
 align-items: center;
+-webkit-justify-content: center;
 justify-content: center;
-padding: 0 20px 60px;
+padding: 0 20px 70px;
 gap: 0;
 }
 
-/* Start prompt */
+/* ── Start prompt ── */
 #start-prompt {
 position: absolute;
-top: 50%; left: 50%;
+top: 50%;
+left: 50%;
+-webkit-transform: translate(-50%, -54%);
 transform: translate(-50%, -54%);
+display: -webkit-flex;
 display: flex;
+-webkit-flex-direction: column;
 flex-direction: column;
+-webkit-align-items: center;
 align-items: center;
 gap: 14px;
 text-align: center;
+-webkit-transition: opacity 0.35s;
 transition: opacity 0.35s;
 }
-#start-prompt.hidden { opacity: 0; pointer-events: none; }
+
+#start-prompt.hidden {
+opacity: 0;
+pointer-events: none;
+}
+
 #start-btn {
 background: none;
-border: 1px solid var(–border);
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
+border: 1px solid #272727;
+color: #e6e2da;
+font-family: ‘Courier New’, monospace;
 font-size: 0.7rem;
 letter-spacing: 0.16em;
 text-transform: uppercase;
-padding: 13px 32px;
+padding: 14px 32px;
 cursor: pointer;
+-webkit-transition: border-color 0.2s;
 transition: border-color 0.2s;
+-webkit-appearance: none;
+border-radius: 0;
 }
-#start-btn:hover { border-color: var(–text-muted); }
-#start-prompt p { font-size: 0.6rem; color: var(–text-muted); letter-spacing: 0.08em; }
 
-/* Tuner wrap */
+#start-btn:active { border-color: #65605a; }
+
+.start-sub {
+font-family: ‘Courier New’, monospace;
+font-size: 0.6rem;
+color: #65605a;
+letter-spacing: 0.08em;
+}
+
+/* ── Tuner wrap ── */
 #tuner-wrap {
 width: 100%;
+display: -webkit-flex;
 display: flex;
+-webkit-flex-direction: column;
 flex-direction: column;
+-webkit-align-items: center;
 align-items: center;
-gap: 24px;
+gap: 22px;
 opacity: 0;
 pointer-events: none;
+-webkit-transition: opacity 0.5s;
 transition: opacity 0.5s;
 }
-#tuner-wrap.active { opacity: 1; pointer-events: all; }
 
-/* Note display */
-#note-display { text-align: center; line-height: 1; }
-#note-name {
-font-family: ‘Playfair Display’, serif;
-font-size: 5rem;
-font-weight: 700;
-display: block;
-min-height: 1.15em;
-transition: color 0.25s;
-color: var(–text);
+#tuner-wrap.active {
+opacity: 1;
+pointer-events: all;
 }
+
+/* ── Note display ── */
+#note-display {
+text-align: center;
+line-height: 1;
+}
+
+#note-name {
+font-family: Georgia, serif;
+font-size: 5rem;
+font-weight: bold;
+display: block;
+min-height: 1.1em;
+color: #e6e2da;
+}
+
 #string-label {
+font-family: ‘Courier New’, monospace;
 font-size: 0.58rem;
 letter-spacing: 0.2em;
 text-transform: uppercase;
-color: var(–text-muted);
+color: #65605a;
 display: block;
 margin-top: 4px;
-min-height: 1.4em;
+min-height: 1.5em;
 }
 
-/* Meter */
-#meter-wrap { width: 100%; max-width: 340px; }
-#meter-canvas { width: 100%; display: block; }
+/* ── Meter ── */
+#meter-wrap {
+width: 100%;
+max-width: 340px;
+}
+
+#meter-canvas {
+width: 100%;
+display: block;
+}
+
 #cents-display {
 text-align: center;
+font-family: ‘Courier New’, monospace;
 font-size: 0.62rem;
-color: var(–text-muted);
+color: #65605a;
 letter-spacing: 0.12em;
 margin-top: 6px;
-transition: color 0.25s;
 min-height: 1.4em;
 }
 
-/* String buttons */
-#strings { display: flex; gap: 16px; align-items: stretch; }
-.string-btn {
+/* ── String buttons ── */
+#strings {
+display: -webkit-flex;
 display: flex;
+gap: 14px;
+-webkit-align-items: stretch;
+align-items: stretch;
+}
+
+.string-btn {
+display: -webkit-flex;
+display: flex;
+-webkit-flex-direction: column;
 flex-direction: column;
+-webkit-align-items: center;
 align-items: center;
-gap: 8px;
-padding: 12px 16px;
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 2px;
+gap: 7px;
+padding: 12px 14px;
+background-color: #1a1a1a;
+border: 1px solid #272727;
 cursor: pointer;
-transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+-webkit-transition: border-color 0.2s, background-color 0.2s;
+transition: border-color 0.2s, background-color 0.2s;
 -webkit-tap-highlight-color: transparent;
+border-radius: 0;
+-webkit-appearance: none;
 }
-.string-btn:hover { border-color: var(–text-muted); }
-.string-btn.active { border-color: var(–text-muted); background: #212121; }
-.string-btn.in-tune { border-color: var(–green); box-shadow: 0 0 12px rgba(40,149,90,0.18); }
-.string-btn.playing { border-color: var(–blue); box-shadow: 0 0 12px rgba(58,127,193,0.2); }
 
-.btn-note {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.5rem;
-color: var(–text-dim);
-line-height: 1;
-transition: color 0.2s;
+.string-btn.active {
+border-color: #65605a;
+background-color: #212121;
 }
-.string-btn.active .btn-note,
-.string-btn.playing .btn-note { color: var(–text); }
 
-.btn-oct {
-font-size: 0.52rem;
-color: var(–text-dim);
-letter-spacing: 0.06em;
-transition: color 0.2s;
+.string-btn.in-tune {
+border-color: #28955a;
 }
-.string-btn.active .btn-oct { color: var(–text-muted); }
 
-.btn-label {
-font-size: 0.5rem;
-letter-spacing: 0.08em;
-text-transform: uppercase;
-color: var(–text-dim);
-transition: color 0.2s;
-text-align: center;
+.string-btn.playing {
+border-color: #3a7fc1;
 }
-.string-btn.active .btn-label { color: var(–text-muted); }
 
 .btn-dot {
-width: 5px; height: 5px;
+width: 5px;
+height: 5px;
 border-radius: 50%;
-background: var(–text-dim);
-transition: background 0.2s, box-shadow 0.2s;
+background-color: #353230;
 }
-.string-btn.active .btn-dot  { background: var(–green-light); box-shadow: 0 0 6px var(–green); }
-.string-btn.in-tune .btn-dot { background: var(–green-light); box-shadow: 0 0 10px var(–green-light); }
-.string-btn.playing .btn-dot { background: var(–blue-light);  box-shadow: 0 0 8px var(–blue-light); }
 
-/* Disclaimer */
+.string-btn.active .btn-dot  { background-color: #38c472; }
+.string-btn.in-tune .btn-dot { background-color: #38c472; }
+.string-btn.playing .btn-dot { background-color: #5a9fe0; }
+
+.btn-note {
+font-family: Georgia, serif;
+font-size: 1.5rem;
+color: #353230;
+line-height: 1;
+}
+
+.string-btn.active .btn-note,
+.string-btn.playing .btn-note { color: #e6e2da; }
+
+.btn-oct {
+font-family: ‘Courier New’, monospace;
+font-size: 0.5rem;
+color: #353230;
+letter-spacing: 0.06em;
+}
+
+.string-btn.active .btn-oct { color: #65605a; }
+
+.btn-label {
+font-family: ‘Courier New’, monospace;
+font-size: 0.48rem;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: #353230;
+text-align: center;
+}
+
+.string-btn.active .btn-label { color: #65605a; }
+
+/* ── Disclaimer ── */
 #disclaimer {
 position: absolute;
-bottom: 52px;
-left: 0; right: 0;
+bottom: 50px;
+left: 0;
+right: 0;
 text-align: center;
-font-size: 0.48rem;
-color: var(–text-dim);
+font-family: ‘Courier New’, monospace;
+font-size: 0.46rem;
+color: #2a2826;
 letter-spacing: 0.1em;
 pointer-events: none;
 }
 
-/* Tabs */
+/* ── Tabs ── */
 nav#tabs {
 position: absolute;
-bottom: 0; left: 0;
+bottom: 0;
+left: 0;
 width: 100%;
-border-top: 1px solid var(–border);
+border-top: 1px solid #272727;
+display: -webkit-flex;
 display: flex;
+background-color: #141414;
 }
+
 .tab {
+-webkit-flex: 1;
 flex: 1;
-padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+padding: 11px 0 13px;
 text-align: center;
-font-size: 0.58rem;
+font-family: ‘Courier New’, monospace;
+font-size: 0.55rem;
 letter-spacing: 0.14em;
 text-transform: uppercase;
-color: var(–text-dim);
+color: #353230;
 cursor: pointer;
 border-top: 2px solid transparent;
+-webkit-transition: color 0.2s, border-color 0.2s;
 transition: color 0.2s, border-color 0.2s;
+display: -webkit-flex;
 display: flex;
+-webkit-flex-direction: column;
 flex-direction: column;
+-webkit-align-items: center;
 align-items: center;
-gap: 5px;
+gap: 4px;
+-webkit-tap-highlight-color: transparent;
 }
-.tab svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.tab.active { color: var(–text); border-top-color: var(–text-muted); }
-.tab:not(.active):hover { color: var(–text-muted); }
+
+.tab svg {
+width: 16px;
+height: 16px;
+stroke: currentColor;
+fill: none;
+stroke-width: 1.5;
+stroke-linecap: round;
+stroke-linejoin: round;
+}
+
+.tab.active { color: #e6e2da; border-top-color: #65605a; }
 </style>
 
 </head>
@@ -269,26 +367,27 @@ gap: 5px;
 
 <div id="start-prompt">
   <button id="start-btn">Enable Microphone</button>
-  <p>Tap a string name to hear a reference tone</p>
+  <p class="start-sub">Tap a string name to hear a reference tone</p>
 </div>
 
 <header>
   <div class="header-left">
-    <h1>Uke Tuner</h1>
+    <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G · C · E · A</span>
-    <span class="version-badge">v1.0.0</span>
+    <span class="version-badge">v1.1.0</span>
   </div>
   <div id="status-dot"></div>
 </header>
 
 <main>
   <div id="tuner-wrap">
-    <div id="note-display">
-      <span id="note-name">—</span>
-      <span id="string-label">&nbsp;</span>
-    </div>
 
 ```
+<div id="note-display">
+  <span id="note-name">—</span>
+  <span id="string-label">&nbsp;</span>
+</div>
+
 <div id="meter-wrap">
   <canvas id="meter-canvas" width="680" height="200"></canvas>
   <div id="cents-display">&nbsp;</div>
@@ -318,182 +417,217 @@ gap: 5px;
 </nav>
 
 <script>
-const STRINGS = [
+// ── Strings ──
+var STRINGS = [
   { note: 'G', octave: 4, freq: 392.00, label: '4th' },
   { note: 'C', octave: 4, freq: 261.63, label: '3rd' },
   { note: 'E', octave: 4, freq: 329.63, label: '2nd' },
-  { note: 'A', octave: 4, freq: 440.00, label: '1st' },
+  { note: 'A', octave: 4, freq: 440.00, label: '1st' }
 ];
 
-const startPrompt  = document.getElementById('start-prompt');
-const startBtn     = document.getElementById('start-btn');
-const tunerWrap    = document.getElementById('tuner-wrap');
-const noteNameEl   = document.getElementById('note-name');
-const stringLabelEl= document.getElementById('string-label');
-const meterCanvas  = document.getElementById('meter-canvas');
-const centsEl      = document.getElementById('cents-display');
-const statusDot    = document.getElementById('status-dot');
-const stringsEl    = document.getElementById('strings');
-const mCtx         = meterCanvas.getContext('2d');
+// ── Hardcoded colors (no CSS variables in JS) ──
+var C_BG        = '#141414';
+var C_TRACK     = '#252220';
+var C_TICK      = '#2a2725';
+var C_TICK_CTR  = '#3a3630';
+var C_LABEL     = '#302e2a';
+var C_AMBER     = 'rgba(201,124,12,0.28)';
+var C_GREEN_FILL= 'rgba(56,196,114,0.22)';
+var C_BLUE_FILL = 'rgba(58,127,193,0.25)';
+var C_NEEDLE_DEF= '#e6e2da';
+var C_NEEDLE_IN = '#38c472';
+var C_NEEDLE_BLU= '#5a9fe0';
+var C_DOT_DEF   = '#e6e2da';
+var C_DOT_IN    = '#38c472';
+var C_DOT_BLU   = '#5a9fe0';
 
-let audioCtx, analyser, rafId;
-let isPlaying = false;
-let smoothCents = 0;
-let currentStringIdx = -1;
-let activeOsc = null, activeGain = null, activeOsc2 = null, activeGain2 = null;
-let playingStringIdx = -1;
+// ── DOM ──
+var startPrompt   = document.getElementById('start-prompt');
+var startBtn      = document.getElementById('start-btn');
+var tunerWrap     = document.getElementById('tuner-wrap');
+var noteNameEl    = document.getElementById('note-name');
+var stringLabelEl = document.getElementById('string-label');
+var meterCanvas   = document.getElementById('meter-canvas');
+var centsEl       = document.getElementById('cents-display');
+var statusDot     = document.getElementById('status-dot');
+var stringsEl     = document.getElementById('strings');
+var mCtx          = meterCanvas.getContext('2d');
 
-// Build string buttons
-STRINGS.forEach((s, i) => {
-  const btn = document.createElement('div');
-  btn.className = 'string-btn';
-  btn.id = `sbtn-${i}`;
-  btn.innerHTML = `
-    <div class="btn-dot"></div>
-    <div class="btn-note">${s.note}</div>
-    <div class="btn-oct">${s.octave}</div>
-    <div class="btn-label">${s.label}</div>
-  `;
-  btn.addEventListener('click', () => onStringTap(i));
-  stringsEl.appendChild(btn);
-});
+// ── State ──
+var audioCtx, analyser, rafId;
+var isPlaying        = false;
+var smoothCents      = 0;
+var currentStringIdx = -1;
+var activeOsc  = null, activeGain  = null;
+var activeOsc2 = null, activeGain2 = null;
+var playingStringIdx = -1;
 
-// ── Meter ──
-const W = meterCanvas.width, H = meterCanvas.height;
+// ── Build string buttons ──
+for (var si = 0; si < STRINGS.length; si++) {
+  (function(i) {
+    var s   = STRINGS[i];
+    var btn = document.createElement('div');
+    btn.className = 'string-btn';
+    btn.id = 'sbtn-' + i;
+    btn.innerHTML =
+      '<div class="btn-dot"></div>' +
+      '<div class="btn-note">' + s.note + '</div>' +
+      '<div class="btn-oct">' + s.octave + '</div>' +
+      '<div class="btn-label">' + s.label + '</div>';
+    btn.addEventListener('click', function() { onStringTap(i); });
+    stringsEl.appendChild(btn);
+  })(si);
+}
+
+// ── Meter drawing ──
+var MW = meterCanvas.width;
+var MH = meterCanvas.height;
 
 function drawMeter(cents, state) {
-  mCtx.clearRect(0, 0, W, H);
+  mCtx.clearRect(0, 0, MW, MH);
 
-  const midX    = W / 2;
-  const trackY  = H / 2 + 10;
-  const trackW  = W - 100;
-  const trackLeft = 50;
+  var midX      = MW / 2;
+  var trackY    = MH / 2 + 10;
+  var trackW    = MW - 100;
+  var trackLeft = 50;
 
-  // Track
-  mCtx.fillStyle = '#222020';
+  // Track line
+  mCtx.fillStyle = C_TRACK;
   mCtx.fillRect(trackLeft, trackY - 1, trackW, 2);
 
-  // Ticks
-  for (let c = -50; c <= 50; c += 10) {
-    const x = midX + (c / 50) * (trackW / 2);
-    const big = c === 0 || c === -50 || c === 50;
-    mCtx.fillStyle = c === 0 ? '#3a3630' : '#262320';
+  // Tick marks
+  for (var c = -50; c <= 50; c += 10) {
+    var x   = midX + (c / 50) * (trackW / 2);
+    var big = (c === 0 || c === -50 || c === 50);
+    mCtx.fillStyle = (c === 0) ? C_TICK_CTR : C_TICK;
     mCtx.fillRect(x - 0.75, trackY - (big ? 10 : 6), 1.5, big ? 20 : 12);
   }
 
-  // Labels
-  mCtx.font = '400 20px DM Mono, monospace';
-  mCtx.fillStyle = '#2e2b28';
+  // Flat / sharp labels
+  mCtx.font = '400 20px Georgia, serif';
+  mCtx.fillStyle = C_LABEL;
   mCtx.textAlign = 'center';
-  mCtx.fillText('♭', trackLeft - 18, trackY + 8);
-  mCtx.fillText('♯', W - trackLeft + 18, trackY + 8);
+  mCtx.fillText('\u266d', trackLeft - 18, trackY + 8);
+  mCtx.fillText('\u266f', MW - trackLeft + 18, trackY + 8);
 
   if (state === 'idle') return;
 
-  const cc = Math.max(-50, Math.min(50, cents));
-  const barX = midX + (cc / 50) * (trackW / 2);
-  const inTune = Math.abs(cc) < 5;
+  var cc     = Math.max(-50, Math.min(50, cents));
+  var barX   = midX + (cc / 50) * (trackW / 2);
+  var inTune = Math.abs(cc) < 5;
 
-  // Fill bar from center
-  const fillL = Math.min(midX, barX), fillR = Math.max(midX, barX);
+  // Fill zone from center
+  var fillL = Math.min(midX, barX);
+  var fillR = Math.max(midX, barX);
   if (fillR - fillL > 1) {
-    if (state === 'playing') {
-      mCtx.fillStyle = 'rgba(58,127,193,0.25)';
-    } else {
-      mCtx.fillStyle = inTune ? 'rgba(56,196,114,0.22)' : 'rgba(201,124,12,0.25)';
-    }
+    if (state === 'playing')       mCtx.fillStyle = C_BLUE_FILL;
+    else if (inTune)               mCtx.fillStyle = C_GREEN_FILL;
+    else                           mCtx.fillStyle = C_AMBER;
     mCtx.fillRect(fillL, trackY - 16, fillR - fillL, 32);
   }
 
-  // Needle bar
-  const barColor = state === 'playing' ? '#5a9fe0'
-                 : inTune ? '#38c472' : '#e6e2da';
-  const barH = 60, barT = 3;
+  // Needle color
+  var needleColor = state === 'playing' ? C_NEEDLE_BLU
+                  : inTune             ? C_NEEDLE_IN
+                  :                      C_NEEDLE_DEF;
 
+  var barH = 60, barT = 3;
+  var bTop = trackY - barH / 2;
+
+  // Glow via shadow
   mCtx.save();
-  mCtx.shadowColor = barColor;
-  mCtx.shadowBlur = inTune && state !== 'playing' ? 16 : 7;
-  mCtx.fillStyle = barColor;
-  mCtx.beginPath();
-  mCtx.roundRect(barX - barT / 2, trackY - barH / 2, barT, barH, barT / 2);
-  mCtx.fill();
+  mCtx.shadowColor = needleColor;
+  mCtx.shadowBlur  = (inTune && state !== 'playing') ? 16 : 8;
+  mCtx.fillStyle   = needleColor;
+  // Plain rect (no roundRect — iOS Safari compat)
+  mCtx.fillRect(barX - barT / 2, bTop, barT, barH);
   mCtx.restore();
 
   // Pivot dot
   mCtx.beginPath();
   mCtx.arc(barX, trackY, 5, 0, Math.PI * 2);
-  mCtx.fillStyle = barColor;
+  mCtx.fillStyle = needleColor;
   mCtx.fill();
 }
 
 drawMeter(0, 'idle');
 
-// ── Autocorrelation ──
+// ── Autocorrelation pitch detection ──
 function autoCorrelate(buf, sampleRate) {
-  const SIZE = buf.length, MAX = Math.floor(SIZE / 2);
-  let rms = 0;
-  for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+  var SIZE = buf.length;
+  var MAX  = Math.floor(SIZE / 2);
+  var rms  = 0;
+  for (var i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
   rms = Math.sqrt(rms / SIZE);
-  if (rms < 0.012) return -1;
+  if (rms < 0.01) return -1;
 
-  let bestOffset = -1, bestCorr = 0, lastCorr = 1;
-  for (let offset = 1; offset < MAX; offset++) {
-    let corr = 0;
-    for (let i = 0; i < MAX; i++) corr += Math.abs(buf[i] - buf[i + offset]);
+  var bestOffset = -1, bestCorr = 0, lastCorr = 1;
+  for (var offset = 1; offset < MAX; offset++) {
+    var corr = 0;
+    for (var j = 0; j < MAX; j++) corr += Math.abs(buf[j] - buf[j + offset]);
     corr = 1 - corr / MAX;
     if (corr > 0.9 && corr > lastCorr) { bestCorr = corr; bestOffset = offset; }
     lastCorr = corr;
   }
   if (bestOffset === -1) return -1;
 
-  let shift = 0;
+  // Parabolic interpolation
+  var shift = 0;
   if (bestOffset > 1 && bestOffset < MAX - 1) {
-    const acf = o => { let s=0; for(let i=0;i<MAX;i++) s+=Math.abs(buf[i]-buf[i+o]); return 1-s/MAX; };
-    const y1=acf(bestOffset-1), y2=bestCorr, y3=acf(bestOffset+1);
-    shift = (y3-y1)/(2*(2*y2-y1-y3));
+    var acf = function(o) {
+      var s = 0;
+      for (var k = 0; k < MAX; k++) s += Math.abs(buf[k] - buf[k + o]);
+      return 1 - s / MAX;
+    };
+    var y1 = acf(bestOffset - 1), y2 = bestCorr, y3 = acf(bestOffset + 1);
+    var denom = 2 * (2 * y2 - y1 - y3);
+    if (denom !== 0) shift = (y3 - y1) / denom;
   }
   return sampleRate / (bestOffset + shift);
 }
 
 function nearestString(freq) {
-  let best = 0, bestDist = Infinity;
-  STRINGS.forEach((s, i) => {
-    const d = Math.abs(1200 * Math.log2(freq / s.freq));
+  var best = 0, bestDist = Infinity;
+  for (var i = 0; i < STRINGS.length; i++) {
+    var d = Math.abs(1200 * Math.log2(freq / STRINGS[i].freq));
     if (d < bestDist) { bestDist = d; best = i; }
-  });
+  }
   return { idx: best, cents: 1200 * Math.log2(freq / STRINGS[best].freq) };
 }
 
 // ── Detection loop ──
-const SMOOTH = 0.14;
+var SMOOTH = 0.14;
 
 function loop() {
   rafId = requestAnimationFrame(loop);
   if (!analyser || isPlaying) return;
 
-  const buf = new Float32Array(analyser.fftSize);
+  var buf = new Float32Array(analyser.fftSize);
   analyser.getFloatTimeDomainData(buf);
-  const freq = autoCorrelate(buf, audioCtx.sampleRate);
+  var freq = autoCorrelate(buf, audioCtx.sampleRate);
 
   if (freq < 220 || freq > 520) {
     drawMeter(smoothCents, 'idle');
     return;
   }
 
-  const { idx, cents } = nearestString(freq);
+  var result = nearestString(freq);
+  var idx    = result.idx;
+  var cents  = result.cents;
+
   smoothCents += (cents - smoothCents) * SMOOTH;
   currentStringIdx = idx;
-  const inTune = Math.abs(smoothCents) < 5;
+  var inTune = Math.abs(smoothCents) < 5;
 
   updateButtons(idx, false, inTune);
 
-  noteNameEl.textContent   = STRINGS[idx].note + STRINGS[idx].octave;
+  noteNameEl.textContent    = STRINGS[idx].note + STRINGS[idx].octave;
   stringLabelEl.textContent = STRINGS[idx].label.toUpperCase() + ' STRING';
-  noteNameEl.style.color   = inTune ? 'var(--green-light)' : 'var(--text)';
+  noteNameEl.style.color    = inTune ? '#38c472' : '#e6e2da';
 
-  const sign = smoothCents >= 0 ? '+' : '';
-  centsEl.textContent  = `${sign}${Math.round(smoothCents)} ¢`;
-  centsEl.style.color  = inTune ? 'var(--green-light)' : 'var(--amber-light)';
+  var sign = smoothCents >= 0 ? '+' : '';
+  centsEl.textContent = sign + Math.round(smoothCents) + ' \u00a2';
+  centsEl.style.color = inTune ? '#38c472' : '#eda830';
 
   drawMeter(smoothCents, 'listening');
 }
@@ -502,12 +636,15 @@ function loop() {
 function stopTone() {
   if (activeOsc) {
     try {
-      const now = audioCtx.currentTime;
+      var now = audioCtx.currentTime;
       activeGain.gain.cancelScheduledValues(now);
       activeGain.gain.setValueAtTime(activeGain.gain.value, now);
       activeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-      activeOsc.stop(now + 0.07);
-      if (activeOsc2) { activeGain2.gain.exponentialRampToValueAtTime(0.001, now+0.06); activeOsc2.stop(now+0.07); }
+      activeOsc.stop(now + 0.08);
+      if (activeOsc2) {
+        activeGain2.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        activeOsc2.stop(now + 0.08);
+      }
     } catch(e) {}
     activeOsc = activeGain = activeOsc2 = activeGain2 = null;
   }
@@ -517,53 +654,56 @@ function playReferenceTone(idx) {
   if (!audioCtx) return;
   stopTone();
 
-  isPlaying = true;
+  isPlaying        = true;
   playingStringIdx = idx;
-  statusDot.className = 'playing';
+  statusDot.style.backgroundColor = '#3a7fc1';
   updateButtons(idx, true, false);
   noteNameEl.textContent    = STRINGS[idx].note + STRINGS[idx].octave;
-  noteNameEl.style.color    = 'var(--blue-light)';
+  noteNameEl.style.color    = '#5a9fe0';
   stringLabelEl.textContent = 'REFERENCE TONE';
   centsEl.textContent       = STRINGS[idx].freq.toFixed(2) + ' Hz';
-  centsEl.style.color       = 'var(--blue-light)';
+  centsEl.style.color       = '#5a9fe0';
   drawMeter(0, 'playing');
 
-  const now  = audioCtx.currentTime;
-  const osc  = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'triangle';
+  var now   = audioCtx.currentTime;
+  var osc   = audioCtx.createOscillator();
+  var gain  = audioCtx.createGain();
+  osc.type  = 'triangle';
   osc.frequency.setValueAtTime(STRINGS[idx].freq, now);
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.5, now + 0.015);
+  gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
   gain.gain.setValueAtTime(0.5, now + 0.5);
   gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(now); osc.stop(now + 2.4);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 2.4);
 
-  // Warmth layer
-  const osc2  = audioCtx.createOscillator();
-  const gain2 = audioCtx.createGain();
+  var osc2  = audioCtx.createOscillator();
+  var gain2 = audioCtx.createGain();
   osc2.type = 'sine';
   osc2.frequency.setValueAtTime(STRINGS[idx].freq * 1.0015, now);
-  gain2.gain.setValueAtTime(0.16, now);
+  gain2.gain.setValueAtTime(0.15, now);
   gain2.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
-  osc2.connect(gain2); gain2.connect(audioCtx.destination);
-  osc2.start(now); osc2.stop(now + 2.4);
+  osc2.connect(gain2);
+  gain2.connect(audioCtx.destination);
+  osc2.start(now);
+  osc2.stop(now + 2.4);
 
   activeOsc = osc; activeGain = gain;
   activeOsc2 = osc2; activeGain2 = gain2;
 
-  osc.onended = () => {
-    isPlaying = false;
+  osc.onended = function() {
+    isPlaying        = false;
     playingStringIdx = -1;
-    statusDot.className = 'listening';
+    statusDot.style.backgroundColor = '#28955a';
     updateButtons(currentStringIdx, false, false);
-    noteNameEl.style.color = 'var(--text)';
+    noteNameEl.style.color = '#e6e2da';
     if (currentStringIdx >= 0) {
       noteNameEl.textContent    = STRINGS[currentStringIdx].note + STRINGS[currentStringIdx].octave;
       stringLabelEl.textContent = STRINGS[currentStringIdx].label.toUpperCase() + ' STRING';
     } else {
-      noteNameEl.textContent    = '—';
+      noteNameEl.textContent    = '\u2014';
       stringLabelEl.textContent = '\u00a0';
     }
     centsEl.textContent = '\u00a0';
@@ -572,7 +712,8 @@ function playReferenceTone(idx) {
 }
 
 function updateButtons(activeIdx, playing, inTune) {
-  document.querySelectorAll('.string-btn').forEach((btn, i) => {
+  for (var i = 0; i < STRINGS.length; i++) {
+    var btn = document.getElementById('sbtn-' + i);
     btn.classList.remove('active', 'in-tune', 'playing');
     if (playing && i === playingStringIdx) {
       btn.classList.add('playing');
@@ -580,7 +721,7 @@ function updateButtons(activeIdx, playing, inTune) {
       btn.classList.add('active');
       if (inTune) btn.classList.add('in-tune');
     }
-  });
+  }
 }
 
 function onStringTap(i) {
@@ -588,44 +729,52 @@ function onStringTap(i) {
   playReferenceTone(i);
 }
 
-// ── Start ──
-startBtn.addEventListener('click', async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+// ── Start / mic init ──
+startBtn.addEventListener('click', function() {
+  // Resume AudioContext on user gesture (required iOS)
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+  navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl:  false
+    }
+  }).then(function(stream) {
+    audioCtx = ctx;
+    audioCtx.resume().then(function() {
+      analyser         = audioCtx.createAnalyser();
+      analyser.fftSize = 4096;
+
+      var filter           = audioCtx.createBiquadFilter();
+      filter.type          = 'lowpass';
+      filter.frequency.value = 600;
+
+      var source = audioCtx.createMediaStreamSource(stream);
+      source.connect(filter);
+      filter.connect(analyser);
+
+      startPrompt.classList.add('hidden');
+      tunerWrap.classList.add('active');
+      statusDot.style.backgroundColor = '#28955a';
+      drawMeter(0, 'idle');
+      loop();
     });
-    audioCtx = new AudioContext();
-    await audioCtx.resume();
-
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 4096;
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 600;
-
-    const source = audioCtx.createMediaStreamSource(stream);
-    source.connect(filter);
-    filter.connect(analyser);
-
-    startPrompt.classList.add('hidden');
-    tunerWrap.classList.add('active');
-    statusDot.className = 'listening';
-    drawMeter(0, 'idle');
-    loop();
-  } catch(e) {
-    startBtn.textContent = 'Microphone access denied';
-    startBtn.style.color = '#c97c0c';
-  }
-});
-
-// Tabs
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
+  }).catch(function() {
+    startBtn.textContent   = 'Microphone access denied';
+    startBtn.style.color   = '#eda830';
+    startBtn.style.borderColor = '#eda830';
   });
 });
+
+// ── Tabs ──
+var tabs = document.querySelectorAll('.tab');
+for (var ti = 0; ti < tabs.length; ti++) {
+  tabs[ti].addEventListener('click', function() {
+    for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+    this.classList.add('active');
+  });
+}
 </script>
 
 </body>

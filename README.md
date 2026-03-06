@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.3.2**
+**Version 1.3.3**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,13 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.3.3 — Deeper debug & relaxed detection thresholds
+
+- Debug panel now shows full buffer min/max/range instead of first 5 values — reveals actual signal amplitude swing rather than a snapshot that may catch quiet moments
+- Debug also shows bestOffset and bestCorr when correlation succeeds, or “no corr” when it fails
+- Lowered RMS silence threshold from 0.003 to 0.001
+- Lowered autocorrelation match threshold from 0.9 to 0.8 for more permissive pitch finding
 
 ### v1.3.2 — iOS silent buffer prime fix
 

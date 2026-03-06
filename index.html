@@ -374,7 +374,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.3.2</span>
+    <span class="version-badge">v1.3.3</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -571,15 +571,17 @@ function autoCorrelate(sampleRate) {
   }
   rms = Math.sqrt(rms / SIZE);
 
-  // Debug: sample first few raw bytes and rms
+  // Debug: show min/max of full buffer and rms
   if (debugEl) {
+    var mn = 255, mx = 0;
+    for (var d = 0; d < SIZE; d++) { if (buf[d] < mn) mn = buf[d]; if (buf[d] > mx) mx = buf[d]; }
     debugEl.textContent =
-      'buf[0..4]: ' + buf[0] + ' ' + buf[1] + ' ' + buf[2] + ' ' + buf[3] + ' ' + buf[4] +
+      'min:' + mn + ' max:' + mx + ' range:' + (mx-mn) +
       ' | rms: ' + rms.toFixed(5) +
       ' | sr: ' + sampleRate;
   }
 
-  if (rms < 0.003) return -1;
+  if (rms < 0.001) return -1;
 
   var MAX = Math.floor(SIZE / 2);
   var bestOffset = -1, bestCorr = 0, lastCorr = 1;
@@ -590,14 +592,19 @@ function autoCorrelate(sampleRate) {
       corr += Math.abs(float[j] - float[j + offset]);
     }
     corr = 1 - corr / MAX;
-    if (corr > 0.9 && corr > lastCorr) {
+    if (corr > 0.8 && corr > lastCorr) {
       bestCorr = corr;
       bestOffset = offset;
     }
     lastCorr = corr;
   }
 
-  if (bestOffset === -1) return -1;
+  if (bestOffset === -1) {
+    if (debugEl) debugEl.textContent += ' | no corr';
+    return -1;
+  }
+
+  if (debugEl) debugEl.textContent += ' | off:' + bestOffset + ' corr:' + bestCorr.toFixed(3);
 
   // Parabolic interpolation for sub-sample accuracy
   var shift = 0;

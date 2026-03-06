@@ -374,7 +374,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.3.1</span>
+    <span class="version-badge">v1.3.2</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -509,8 +509,8 @@ function drawMeter(cents, state) {
   mCtx.font = '400 20px Georgia, serif';
   mCtx.fillStyle = C_LABEL;
   mCtx.textAlign = 'center';
-  mCtx.fillText('\u266d', trackLeft - 18, trackY + 8);
-  mCtx.fillText('\u266f', MW - trackLeft + 18, trackY + 8);
+  mCtx.fillText('b', trackLeft - 18, trackY + 8);
+  mCtx.fillText('#', MW - trackLeft + 18, trackY + 8);
 
   if (state === 'idle') return;
 
@@ -763,9 +763,17 @@ function onStringTap(i) {
 function initAudio(stream) {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   audioCtx.resume().then(function() {
+
+    // iOS WebKit requires AudioContext to produce output before
+    // MediaStreamSource delivers real samples. Play a silent buffer first.
+    var silentBuf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    var silent    = audioCtx.createBufferSource();
+    silent.buffer = silentBuf;
+    silent.connect(audioCtx.destination);
+    silent.start(0);
+
     analyser         = audioCtx.createAnalyser();
     analyser.fftSize = 4096;
-    // No filter — iOS lowpass was killing the signal needed for autocorrelation
     var source = audioCtx.createMediaStreamSource(stream);
     source.connect(analyser);
 

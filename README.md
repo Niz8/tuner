@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.1.0**
+**Version 1.2.0**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -39,7 +39,7 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 |Frequency range  |220 – 520 Hz (ukulele fundamental range)                        |
 |Smoothing factor |0.14 (exponential moving average on cents)                      |
 |In-tune threshold|±5 cents                                                        |
-|Low-pass filter  |600 Hz (reduces room noise before analysis)                     |
+|Low-pass filter  |Removed — was blocking signal needed for autocorrelation on iOS |
 |Reference tone   |Triangle wave + detuned sine layer (~1.0015×)                   |
 |Fonts            |System fonts only (Georgia, Courier New) — no Google Fonts      |
 |Canvas rendering |No CSS variables, no `roundRect` — full iOS Safari compatibility|
@@ -68,6 +68,15 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.2.0 — iOS pitch detection fix
+
+- Removed lowpass filter — it was stripping the waveform detail autocorrelation needs to function
+- Lowered RMS silence threshold from 0.01 to 0.003 to catch quieter iOS mic levels
+- Widened frequency detection window to 200–600 Hz
+- Added `getUserMedia` fallback: tries full constraints first, retries with `audio: true` if iOS rejects the constraint object
+- Fixed em-dash (`—`) rendering as commas in Georgia on iOS; replaced with plain hyphen
+- Moved `AudioContext` creation into its own `initAudio()` helper for cleaner retry logic
 
 ### v1.1.0 — iOS Safari compatibility & display fixes
 

@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.3.4**
+**Version 1.3.5**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,13 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.3.5 — Replaced correlation algorithm, fixed phantom glyphs
+
+- Rewrote pitch detection using normalized autocorrelation (NSDF) — previous algorithm had a `lastCorr=1` initialization bug that prevented it from ever finding a valid peak; NSDF compares products rather than differences and is more robust for instrument audio
+- Search range now constrained to 200–520 Hz (the actual ukulele fundamental range) rather than scanning the whole buffer — faster and avoids false positives
+- NSDF threshold set at 0.4 — more permissive than the old 0.8 difference-based threshold
+- Switched note-name and string-label from `min-height` to fixed `height` with `overflow:hidden` — prevents Georgia from rendering phantom glyphs in empty elements
 
 ### v1.3.4 — Force iOS mic stream activation via zero-gain output routing
 

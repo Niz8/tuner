@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.5.0**
+**Version 1.5.1**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,12 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.5.1 — Eliminated all non-ASCII characters from source
+
+- Identified root cause of the three persistent ``` glyphs: 84 instances of Unicode box-drawing character U+2500 (─) used as decorative comment separators (/* – Header – */) throughout CSS and JS, plus 5 em-dashes (U+2014) in inline comments
+- iOS Safari’s HTML parser was leaking these byte sequences through the style/script tags as visible glyphs
+- Replaced all with plain ASCII dashes; file now contains zero non-ASCII bytes
 
 ### v1.5.0 — Background mic suspension
 

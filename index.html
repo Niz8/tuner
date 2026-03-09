@@ -81,6 +81,11 @@ background-color: #353230;
 transition: background-color 0.4s;
 flex-shrink: 0;
 }
+/* paused state — mic suspended in background */
+#status-dot.paused {
+background-color: #3a3630;
+box-shadow: none;
+}
 
 /* ── Main ── */
 main {
@@ -375,7 +380,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.4.0</span>
+    <span class="version-badge">v1.5.0</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -837,6 +842,45 @@ for (var ti = 0; ti < tabs.length; ti++) {
     this.classList.add('active');
   });
 }
+
+// ── Background / focus detection ──
+function pauseTuner() {
+  if (!audioCtx || audioCtx.state === 'suspended') return;
+  cancelAnimationFrame(rafId);
+  rafId = null;
+  audioCtx.suspend();
+  statusDot.className = 'paused';
+  // Clear stale display so frozen reading doesn't show on resume
+  noteNameEl.textContent    = '';
+  stringLabelEl.textContent = '';
+  centsEl.textContent       = '';
+  noteNameEl.style.color    = '#e6e2da';
+  smoothFreq  = 0;
+  stableCount = 0;
+  smoothCents = 0;
+  drawMeter(0, 'idle');
+}
+
+function resumeTuner() {
+  if (!audioCtx || audioCtx.state === 'running') return;
+  audioCtx.resume().then(function() {
+    statusDot.style.backgroundColor = '#28955a';
+    statusDot.className = '';
+    if (!rafId) loop();
+  });
+}
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') {
+    pauseTuner();
+  } else {
+    resumeTuner();
+  }
+});
+
+// Secondary: window blur/focus for desktop tab switching
+window.addEventListener('blur',  function() { pauseTuner();  });
+window.addEventListener('focus', function() { resumeTuner(); });
 </script>
 
 </body>

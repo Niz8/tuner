@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.4.0**
+**Version 1.5.0**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,14 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.5.0 — Background mic suspension
+
+- Added `visibilitychange` listener: suspends `AudioContext` and cancels animation frame when page is hidden (iOS home button, app switcher, lock screen, tab switch); resumes cleanly when page becomes visible again
+- Added `window blur/focus` listeners as secondary signal for desktop tab switching
+- On pause: clears note display, resets smoothing state and stability counter so tuner re-locks fresh on resume rather than snapping from stale values
+- Status dot dims to a neutral grey when paused; returns to green on resume
+- Mic indicator in iOS status bar will clear when app is backgrounded
 
 ### v1.4.0 — Needle stabilization
 

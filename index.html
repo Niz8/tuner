@@ -29,7 +29,7 @@ height: 100dvh;
 height: 100vh;
 }
 
-/* ── Header ── */
+/* – Header – */
 header {
 width: 100%;
 padding: 18px 22px 0;
@@ -81,13 +81,13 @@ background-color: #353230;
 transition: background-color 0.4s;
 flex-shrink: 0;
 }
-/* paused state — mic suspended in background */
+/* paused state – mic suspended in background */
 #status-dot.paused {
 background-color: #3a3630;
 box-shadow: none;
 }
 
-/* ── Main ── */
+/* – Main – */
 main {
 -webkit-flex: 1;
 flex: 1;
@@ -105,7 +105,7 @@ padding: 0 20px 70px;
 gap: 0;
 }
 
-/* ── Start prompt ── */
+/* – Start prompt – */
 #start-prompt {
 position: absolute;
 top: 50%;
@@ -154,7 +154,7 @@ color: #65605a;
 letter-spacing: 0.08em;
 }
 
-/* ── Tuner wrap ── */
+/* – Tuner wrap – */
 #tuner-wrap {
 width: 100%;
 display: -webkit-flex;
@@ -175,7 +175,7 @@ opacity: 1;
 pointer-events: all;
 }
 
-/* ── Note display ── */
+/* – Note display – */
 #note-display {
 text-align: center;
 line-height: 1;
@@ -202,7 +202,7 @@ height: 1.5em;
 overflow: hidden;
 }
 
-/* ── Meter ── */
+/* – Meter – */
 #meter-wrap {
 width: 100%;
 max-width: 340px;
@@ -223,7 +223,7 @@ margin-top: 6px;
 min-height: 1.4em;
 }
 
-/* ── String buttons ── */
+/* – String buttons – */
 #strings {
 display: -webkit-flex;
 display: flex;
@@ -305,7 +305,7 @@ text-align: center;
 
 .string-btn.active .btn-label { color: #65605a; }
 
-/* ── Disclaimer ── */
+/* – Disclaimer – */
 #disclaimer {
 position: absolute;
 bottom: 50px;
@@ -319,7 +319,7 @@ letter-spacing: 0.1em;
 pointer-events: none;
 }
 
-/* ── Tabs ── */
+/* – Tabs – */
 nav#tabs {
 position: absolute;
 bottom: 0;
@@ -380,7 +380,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.5.0</span>
+    <span class="version-badge">v1.5.1</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -425,7 +425,7 @@ stroke-linejoin: round;
 </nav>
 
 <script>
-// ── Strings ──
+// -- Strings --
 var STRINGS = [
   { note: 'G', octave: 4, freq: 392.00, label: '4th' },
   { note: 'C', octave: 4, freq: 261.63, label: '3rd' },
@@ -433,7 +433,7 @@ var STRINGS = [
   { note: 'A', octave: 4, freq: 440.00, label: '1st' }
 ];
 
-// ── Hardcoded colors (no CSS variables in JS) ──
+// -- Hardcoded colors (no CSS variables in JS) --
 var C_BG        = '#141414';
 var C_TRACK     = '#252220';
 var C_TICK      = '#2a2725';
@@ -449,7 +449,7 @@ var C_DOT_DEF   = '#e6e2da';
 var C_DOT_IN    = '#38c472';
 var C_DOT_BLU   = '#5a9fe0';
 
-// ── DOM ──
+// -- DOM --
 var startPrompt   = document.getElementById('start-prompt');
 var startBtn      = document.getElementById('start-btn');
 var tunerWrap     = document.getElementById('tuner-wrap');
@@ -461,7 +461,7 @@ var statusDot     = document.getElementById('status-dot');
 var stringsEl     = document.getElementById('strings');
 var mCtx          = meterCanvas.getContext('2d');
 
-// ── State ──
+// -- State --
 var audioCtx, analyser, rafId;
 var isPlaying        = false;
 var smoothCents      = 0;
@@ -470,7 +470,7 @@ var activeOsc  = null, activeGain  = null;
 var activeOsc2 = null, activeGain2 = null;
 var playingStringIdx = -1;
 
-// ── Build string buttons ──
+// -- Build string buttons --
 for (var si = 0; si < STRINGS.length; si++) {
   (function(i) {
     var s   = STRINGS[i];
@@ -487,7 +487,7 @@ for (var si = 0; si < STRINGS.length; si++) {
   })(si);
 }
 
-// ── Meter drawing ──
+// -- Meter drawing --
 var MW = meterCanvas.width;
 var MH = meterCanvas.height;
 
@@ -547,7 +547,7 @@ function drawMeter(cents, state) {
   mCtx.shadowColor = needleColor;
   mCtx.shadowBlur  = (inTune && state !== 'playing') ? 16 : 8;
   mCtx.fillStyle   = needleColor;
-  // Plain rect (no roundRect — iOS Safari compat)
+  // Plain rect (no roundRect -- iOS Safari compat)
   mCtx.fillRect(barX - barT / 2, bTop, barT, barH);
   mCtx.restore();
 
@@ -562,7 +562,7 @@ drawMeter(0, 'idle');
 
 var debugEl = document.getElementById('debug');
 
-// ── Autocorrelation pitch detection ──
+// -- Autocorrelation pitch detection --
 function autoCorrelate(sampleRate) {
   var SIZE = analyser.fftSize;
   var buf  = new Uint8Array(SIZE);
@@ -631,8 +631,8 @@ function nearestString(freq) {
   return { idx: best, cents: 1200 * Math.log2(freq / STRINGS[best].freq) };
 }
 
-// ── Detection loop ──
-var SMOOTH = 0.06;        // heavier smoothing — was 0.14
+// -- Detection loop --
+var SMOOTH = 0.06;        // heavier smoothing -- was 0.14
 var smoothFreq  = 0;      // smooth the raw frequency before converting to cents
 var stableCount = 0;      // how many frames in a row detection has agreed
 var STABLE_NEEDED = 3;    // frames needed before updating display
@@ -651,7 +651,7 @@ function loop() {
 
   if (debugEl) debugEl.textContent += ' | freq: ' + freq.toFixed(1);
 
-  // Smooth the raw frequency first — this stabilizes cents calculation
+  // Smooth the raw frequency first -- this stabilizes cents calculation
   if (smoothFreq === 0) { smoothFreq = freq; }
   smoothFreq += (freq - smoothFreq) * 0.1;
 
@@ -682,7 +682,7 @@ function loop() {
   drawMeter(smoothCents, 'listening');
 }
 
-// ── Reference tone ──
+// -- Reference tone --
 function stopTone() {
   if (activeOsc) {
     try {
@@ -779,7 +779,7 @@ function onStringTap(i) {
   playReferenceTone(i);
 }
 
-// ── Start / mic init ──
+// -- Start / mic init --
 function initAudio(stream) {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   audioCtx.resume().then(function() {
@@ -821,7 +821,7 @@ startBtn.addEventListener('click', function() {
       initAudio(stream);
     })
     .catch(function() {
-      // iOS may reject the constraint object — retry with minimal constraints
+      // iOS may reject the constraint object -- retry with minimal constraints
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(function(stream) {
           initAudio(stream);
@@ -834,7 +834,7 @@ startBtn.addEventListener('click', function() {
     });
 });
 
-// ── Tabs ──
+// -- Tabs --
 var tabs = document.querySelectorAll('.tab');
 for (var ti = 0; ti < tabs.length; ti++) {
   tabs[ti].addEventListener('click', function() {
@@ -843,7 +843,7 @@ for (var ti = 0; ti < tabs.length; ti++) {
   });
 }
 
-// ── Background / focus detection ──
+// -- Background / focus detection --
 function pauseTuner() {
   if (!audioCtx || audioCtx.state === 'suspended') return;
   cancelAnimationFrame(rafId);

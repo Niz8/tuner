@@ -380,7 +380,7 @@ stroke-linejoin: round;
   <div class="header-left">
     <span class="header-title">Uke Tuner</span>
     <span class="tuning-label">G . C . E . A</span>
-    <span class="version-badge">v1.5.1</span>
+    <span class="version-badge">v1.6.0</span>
   </div>
   <div id="status-dot"></div>
 </header>
@@ -388,7 +388,7 @@ stroke-linejoin: round;
 <main>
   <div id="tuner-wrap">
 
-
+```
 <div id="note-display">
   <span id="note-name"></span>
   <span id="string-label"></span>
@@ -401,11 +401,45 @@ stroke-linejoin: round;
 
 <div id="strings"></div>
 
-<div id="debug" style="font-family:'Courier New',monospace;font-size:0.55rem;color:#65605a;text-align:center;line-height:1.8;letter-spacing:0.06em;"></div>
-
+<div id="debug" style="display:none;"></div>
+```
 
   </div>
 </main>
+
+<!-- Chord panel -->
+
+<div id="chord-panel" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background-color:#141414; padding-top:60px; padding-bottom:56px; overflow-y:auto;">
+
+  <!-- Chord selector -->
+
+  <div id="chord-controls" style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:14px;padding:16px 20px 0;">
+
+```
+<!-- Type selector -->
+<div id="chord-type-tabs" style="display:-webkit-flex;display:flex;gap:0;border:1px solid #272727;">
+  <div class="chord-type-btn active-type" data-type="major" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#e6e2da;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;background-color:#212121;">Major</div>
+  <div class="chord-type-btn" data-type="minor" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Minor</div>
+  <div class="chord-type-btn" data-type="maj7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Maj7</div>
+  <div class="chord-type-btn" data-type="min7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;">Min7</div>
+</div>
+
+<!-- Root selector -->
+<div id="chord-root-row" style="display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;gap:6px;max-width:360px;">
+</div>
+```
+
+  </div>
+
+  <!-- Diagram display -->
+
+  <div id="chord-display" style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;padding:20px 20px 0;gap:6px;">
+    <div id="chord-name" style="font-family:Georgia,serif;font-size:2.2rem;font-weight:bold;color:#e6e2da;text-align:center;min-height:1.2em;"></div>
+    <canvas id="chord-canvas" width="300" height="340" style="max-width:240px;display:block;"></canvas>
+    <div id="chord-fingering" style="font-family:'Courier New',monospace;font-size:0.6rem;color:#65605a;letter-spacing:0.12em;text-align:center;margin-top:4px;"></div>
+  </div>
+
+</div>
 
 <div id="disclaimer">vibecoded . use at your own risk</div>
 
@@ -631,31 +665,69 @@ function nearestString(freq) {
   return { idx: best, cents: 1200 * Math.log2(freq / STRINGS[best].freq) };
 }
 
-// -- Detection loop --
-var SMOOTH = 0.06;        // heavier smoothing -- was 0.14
-var smoothFreq  = 0;      // smooth the raw frequency before converting to cents
-var stableCount = 0;      // how many frames in a row detection has agreed
-var STABLE_NEEDED = 3;    // frames needed before updating display
+// -- Detection loop with lock-on-attack --
+var SMOOTH = 0.06;
+var smoothFreq   = 0;
+var stableCount  = 0;
+var STABLE_NEEDED = 3;
+
+// Attack / lock state
+var ATTACK_THRESHOLD = 0.018;  // RMS spike = new pluck
+var LOCK_DURATION    = 600;    // ms to hold reading after attack
+var prevRms          = 0;
+var lockedUntil      = 0;      // timestamp when lock expires
+var lockedCents      = null;   // frozen cents value while locked
+var lockedIdx        = -1;
 
 function loop() {
   rafId = requestAnimationFrame(loop);
   if (!analyser || isPlaying) return;
 
+  var now = Date.now();
+
+  // Read RMS directly from byte buffer
+  var sizeBuf = analyser.fftSize;
+  var rmsBuf  = new Uint8Array(sizeBuf);
+  analyser.getByteTimeDomainData(rmsBuf);
+  var rmsSum = 0;
+  for (var ri = 0; ri < sizeBuf; ri++) {
+    var rv = (rmsBuf[ri] - 128) / 128;
+    rmsSum += rv * rv;
+  }
+  var currentRms = Math.sqrt(rmsSum / sizeBuf);
+
+  // Detect attack: RMS jumped significantly
+  var isAttack = (currentRms - prevRms) > ATTACK_THRESHOLD && currentRms > 0.015;
+  prevRms = currentRms;
+
+  if (isAttack) {
+    // New pluck -- unlock so we take a fresh reading
+    lockedCents  = null;
+    lockedIdx    = -1;
+    lockedUntil  = 0;
+    smoothFreq   = 0;
+    stableCount  = 0;
+    smoothCents  = 0;
+  }
+
+  // If locked and not expired, freeze the display
+  if (lockedCents !== null && now < lockedUntil) {
+    drawMeter(lockedCents, 'listening');
+    return;
+  }
+
+  // Not locked -- run detection
   var freq = autoCorrelate(audioCtx.sampleRate);
 
   if (freq < 200 || freq > 600) {
     stableCount = 0;
-    drawMeter(smoothCents, 'idle');
+    if (lockedCents === null) drawMeter(smoothCents, 'idle');
     return;
   }
 
-  if (debugEl) debugEl.textContent += ' | freq: ' + freq.toFixed(1);
-
-  // Smooth the raw frequency first -- this stabilizes cents calculation
   if (smoothFreq === 0) { smoothFreq = freq; }
   smoothFreq += (freq - smoothFreq) * 0.1;
 
-  // Only proceed if this reading is within 30Hz of smoothed (reject outliers)
   if (Math.abs(freq - smoothFreq) > 30) { stableCount = 0; return; }
 
   stableCount++;
@@ -680,6 +752,13 @@ function loop() {
   centsEl.style.color = inTune ? '#38c472' : '#eda830';
 
   drawMeter(smoothCents, 'listening');
+
+  // Lock reading once stable enough
+  if (stableCount >= STABLE_NEEDED + 4 && lockedCents === null) {
+    lockedCents = smoothCents;
+    lockedIdx   = idx;
+    lockedUntil = now + LOCK_DURATION;
+  }
 }
 
 // -- Reference tone --
@@ -834,12 +913,27 @@ startBtn.addEventListener('click', function() {
     });
 });
 
-// -- Tabs --
+// -- Tabs with panel switching --
+var chordPanel = document.getElementById('chord-panel');
+var tunerMain  = document.querySelector('main');
+
 var tabs = document.querySelectorAll('.tab');
 for (var ti = 0; ti < tabs.length; ti++) {
   tabs[ti].addEventListener('click', function() {
     for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
     this.classList.add('active');
+    var which = this.getAttribute('data-tab');
+    if (which === 'chords') {
+      tunerMain.style.display   = 'none';
+      chordPanel.style.display  = 'block';
+      // Pause detection but keep audio alive
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    } else {
+      tunerMain.style.display   = '';
+      chordPanel.style.display  = 'none';
+      // Resume detection if mic is active
+      if (audioCtx && audioCtx.state === 'running' && !rafId && !isPlaying) loop();
+    }
   });
 }
 
@@ -850,14 +944,15 @@ function pauseTuner() {
   rafId = null;
   audioCtx.suspend();
   statusDot.className = 'paused';
-  // Clear stale display so frozen reading doesn't show on resume
   noteNameEl.textContent    = '';
   stringLabelEl.textContent = '';
   centsEl.textContent       = '';
   noteNameEl.style.color    = '#e6e2da';
-  smoothFreq  = 0;
-  stableCount = 0;
-  smoothCents = 0;
+  smoothFreq   = 0;
+  stableCount  = 0;
+  smoothCents  = 0;
+  lockedCents  = null;
+  lockedIdx    = -1;
   drawMeter(0, 'idle');
 }
 
@@ -866,21 +961,222 @@ function resumeTuner() {
   audioCtx.resume().then(function() {
     statusDot.style.backgroundColor = '#28955a';
     statusDot.className = '';
-    if (!rafId) loop();
+    var activeTab = document.querySelector('.tab.active');
+    var onTuner = !activeTab || activeTab.getAttribute('data-tab') === 'tuner';
+    if (!rafId && onTuner && !isPlaying) loop();
   });
 }
 
 document.addEventListener('visibilitychange', function() {
-  if (document.visibilityState === 'hidden') {
-    pauseTuner();
-  } else {
-    resumeTuner();
-  }
+  if (document.visibilityState === 'hidden') { pauseTuner(); }
+  else { resumeTuner(); }
 });
 
-// Secondary: window blur/focus for desktop tab switching
 window.addEventListener('blur',  function() { pauseTuner();  });
 window.addEventListener('focus', function() { resumeTuner(); });
+
+// ============================================================
+// -- Chord system --
+// ============================================================
+// Fret data: [G-string, C-string, E-string, A-string]  0=open
+// Format: { frets:[g,c,e,a], fingers:[g,c,e,a] (0=open) }
+
+var CHORD_DATA = {
+  'C':    { major:  { frets:[0,0,0,3], fingers:[0,0,0,3] },
+            minor:  { frets:[0,3,3,3], fingers:[0,3,3,3] },  // barre 3
+            maj7:   { frets:[0,0,0,2], fingers:[0,0,0,2] },
+            min7:   { frets:[0,3,3,3], fingers:[0,1,2,3] } }, // actually 0333 barre
+  'Db':   { major:  { frets:[1,1,1,4], fingers:[1,1,1,4] },
+            minor:  { frets:[1,4,4,4], fingers:[1,2,3,4] },
+            maj7:   { frets:[1,1,1,3], fingers:[1,1,1,3] },
+            min7:   { frets:[1,1,1,1], fingers:[1,1,1,1] } },
+  'D':    { major:  { frets:[2,2,2,0], fingers:[1,2,3,0] },
+            minor:  { frets:[2,2,1,0], fingers:[2,3,1,0] },
+            maj7:   { frets:[2,2,2,4], fingers:[1,2,3,4] },
+            min7:   { frets:[2,2,1,2], fingers:[2,3,1,4] } },
+  'Eb':   { major:  { frets:[0,3,3,1], fingers:[0,3,4,1] },
+            minor:  { frets:[3,3,2,1], fingers:[3,4,2,1] },
+            maj7:   { frets:[3,3,3,5], fingers:[1,2,3,4] },
+            min7:   { frets:[3,3,2,3], fingers:[2,3,1,4] } },
+  'E':    { major:  { frets:[4,4,4,2], fingers:[2,3,4,1] },
+            minor:  { frets:[0,4,3,2], fingers:[0,3,2,1] },
+            maj7:   { frets:[1,3,0,2], fingers:[1,3,0,2] },
+            min7:   { frets:[0,2,0,2], fingers:[0,2,0,3] } },
+  'F':    { major:  { frets:[2,0,1,0], fingers:[2,0,1,0] },
+            minor:  { frets:[1,0,1,3], fingers:[1,0,2,4] },
+            maj7:   { frets:[2,4,1,3], fingers:[2,4,1,3] },
+            min7:   { frets:[1,3,1,3], fingers:[1,3,1,3] } },
+  'F#':   { major:  { frets:[3,1,2,1], fingers:[3,1,2,1] },
+            minor:  { frets:[2,1,2,0], fingers:[2,1,3,0] },
+            maj7:   { frets:[3,5,2,4], fingers:[2,4,1,3] },
+            min7:   { frets:[2,4,2,4], fingers:[1,3,1,3] } },
+  'G':    { major:  { frets:[0,2,3,2], fingers:[0,1,3,2] },
+            minor:  { frets:[0,2,3,1], fingers:[0,2,3,1] },
+            maj7:   { frets:[0,2,2,2], fingers:[0,1,2,3] },
+            min7:   { frets:[0,2,3,3], fingers:[0,1,2,3] } },
+  'Ab':   { major:  { frets:[5,3,4,3], fingers:[4,1,3,2] },
+            minor:  { frets:[1,3,4,2], fingers:[1,3,4,2] },
+            maj7:   { frets:[1,3,3,3], fingers:[1,2,3,4] },
+            min7:   { frets:[1,3,4,4], fingers:[1,2,3,4] } },
+  'A':    { major:  { frets:[2,1,0,0], fingers:[2,1,0,0] },
+            minor:  { frets:[2,0,0,0], fingers:[2,0,0,0] },
+            maj7:   { frets:[1,1,0,0], fingers:[1,2,0,0] },
+            min7:   { frets:[0,0,0,0], fingers:[0,0,0,0] } },
+  'Bb':   { major:  { frets:[3,2,1,1], fingers:[4,3,1,1] },
+            minor:  { frets:[3,1,1,1], fingers:[4,1,1,1] },
+            maj7:   { frets:[2,2,1,0], fingers:[2,3,1,0] },
+            min7:   { frets:[3,1,1,3], fingers:[3,1,1,4] } },
+  'B':    { major:  { frets:[4,3,2,2], fingers:[4,3,1,1] },
+            minor:  { frets:[4,2,2,2], fingers:[4,1,2,3] },
+            maj7:   { frets:[3,3,2,1], fingers:[3,4,2,1] },
+            min7:   { frets:[2,2,2,2], fingers:[1,1,1,1] } }
+};
+
+var ROOTS = ['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+var currentRoot = 'C';
+var currentType = 'major';
+
+// Build root buttons
+var rootRow = document.getElementById('chord-root-row');
+for (var ri = 0; ri < ROOTS.length; ri++) {
+  (function(root) {
+    var btn = document.createElement('div');
+    btn.style.cssText = 'font-family:\'Courier New\',monospace;font-size:0.62rem;letter-spacing:0.08em;padding:7px 10px;border:1px solid #272727;cursor:pointer;color:#65605a;min-width:36px;text-align:center;';
+    btn.textContent = root;
+    btn.setAttribute('data-root', root);
+    if (root === 'C') { btn.style.color = '#e6e2da'; btn.style.borderColor = '#65605a'; btn.style.backgroundColor = '#212121'; }
+    btn.addEventListener('click', function() {
+      currentRoot = root;
+      document.querySelectorAll('#chord-root-row div').forEach(function(b) {
+        b.style.color = '#65605a'; b.style.borderColor = '#272727'; b.style.backgroundColor = '';
+      });
+      btn.style.color = '#e6e2da'; btn.style.borderColor = '#65605a'; btn.style.backgroundColor = '#212121';
+      renderChord();
+    });
+    rootRow.appendChild(btn);
+  })(ROOTS[ri]);
+}
+
+// Type buttons
+document.querySelectorAll('.chord-type-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    currentType = btn.getAttribute('data-type');
+    document.querySelectorAll('.chord-type-btn').forEach(function(b) {
+      b.style.color = '#65605a'; b.style.backgroundColor = '';
+    });
+    btn.style.color = '#e6e2da'; btn.style.backgroundColor = '#212121';
+    renderChord();
+  });
+});
+
+// Draw chord diagram on canvas
+var cc   = document.getElementById('chord-canvas');
+var cCtx = cc.getContext('2d');
+
+function renderChord() {
+  var data = CHORD_DATA[currentRoot] && CHORD_DATA[currentRoot][currentType];
+  if (!data) return;
+
+  var frets   = data.frets;
+  var fingers = data.fingers;
+
+  // Chord name label
+  var nameEl = document.getElementById('chord-name');
+  var suffix = { major:'', minor:'m', maj7:'maj7', min7:'m7' }[currentType];
+  nameEl.textContent = currentRoot + suffix;
+
+  // Fingering text  G C E A
+  var fEl = document.getElementById('chord-fingering');
+  fEl.textContent = 'G:' + frets[0] + '  C:' + frets[1] + '  E:' + frets[2] + '  A:' + frets[3];
+
+  // Canvas dimensions
+  var W = cc.width, H = cc.height;
+  cCtx.clearRect(0, 0, W, H);
+
+  // Determine fret window
+  var minFret = 99, maxFret = 0;
+  for (var fi = 0; fi < 4; fi++) {
+    if (frets[fi] > 0 && frets[fi] < minFret) minFret = frets[fi];
+    if (frets[fi] > maxFret) maxFret = frets[fi];
+  }
+  if (minFret === 99) minFret = 0;
+  var startFret = (minFret <= 1) ? 0 : minFret - 1;
+  var numFrets  = Math.max(4, maxFret - startFret + 1);
+
+  // Layout
+  var padL = 30, padR = 20, padT = 36, padB = 30;
+  var gridW = W - padL - padR;
+  var gridH = H - padT - padB;
+  var strGap  = gridW / 3;   // 4 strings = 3 gaps
+  var fretGap = gridH / numFrets;
+
+  // Nut (thick bar if starting at fret 0)
+  if (startFret === 0) {
+    cCtx.fillStyle = '#e6e2da';
+    cCtx.fillRect(padL, padT - 6, gridW, 5);
+  } else {
+    // Show fret number
+    cCtx.font = '400 20px Courier New, monospace';
+    cCtx.fillStyle = '#65605a';
+    cCtx.textAlign = 'right';
+    cCtx.fillText((startFret + 1) + 'fr', padL - 6, padT + fretGap * 0.6);
+  }
+
+  // Fret lines
+  for (var f = 0; f <= numFrets; f++) {
+    var fy = padT + f * fretGap;
+    cCtx.fillStyle = f === 0 && startFret > 0 ? '#353230' : '#2a2725';
+    cCtx.fillRect(padL, fy - 0.75, gridW, 1.5);
+  }
+
+  // String lines
+  for (var s = 0; s < 4; s++) {
+    var sx = padL + s * strGap;
+    cCtx.fillStyle = '#2a2725';
+    cCtx.fillRect(sx - 0.75, padT, 1.5, gridH);
+  }
+
+  // String labels at bottom
+  var strLabels = ['G','C','E','A'];
+  cCtx.font = '400 18px Courier New, monospace';
+  cCtx.fillStyle = '#3a3630';
+  cCtx.textAlign = 'center';
+  for (var sl = 0; sl < 4; sl++) {
+    cCtx.fillText(strLabels[sl], padL + sl * strGap, H - 6);
+  }
+
+  // Dots
+  for (var d = 0; d < 4; d++) {
+    var fret = frets[d];
+    var sx2  = padL + d * strGap;
+
+    if (fret === 0) {
+      // Open string circle
+      cCtx.beginPath();
+      cCtx.arc(sx2, padT - 18, 7, 0, Math.PI * 2);
+      cCtx.strokeStyle = '#65605a';
+      cCtx.lineWidth   = 1.5;
+      cCtx.stroke();
+    } else {
+      var relFret = fret - startFret;
+      var dotY    = padT + (relFret - 0.5) * fretGap;
+      cCtx.beginPath();
+      cCtx.arc(sx2, dotY, 10, 0, Math.PI * 2);
+      cCtx.fillStyle = '#e6e2da';
+      cCtx.fill();
+      // Finger number
+      if (fingers[d] > 0) {
+        cCtx.font = '400 14px Courier New, monospace';
+        cCtx.fillStyle = '#141414';
+        cCtx.textAlign = 'center';
+        cCtx.fillText(fingers[d], sx2, dotY + 5);
+      }
+    }
+  }
+}
+
+// Initial render
+renderChord();
 </script>
 
 </body>

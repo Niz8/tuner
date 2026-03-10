@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Uke Tuner</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background-color: #141414;
+  color: #e6e2da;
+  font-family: Georgia, 'Times New Roman', serif;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  height: 100dvh;
+  height: 100vh;
+}
+
+/* -- Header -- */
+header {
+  width: 100%;
+  padding: 18px 22px 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.header-title {
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: normal;
+  color: #e6e2da;
+  letter-spacing: 0.01em;
+}
+
+.tuning-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: #65605a;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.version-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 0.48rem;
+  color: #353230;
+  letter-spacing: 0.12em;
+}
+
+#status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #353230;
+  -webkit-transition: background-color 0.4s;
+  transition: background-color 0.4s;
+  flex-shrink: 0;
+}
+/* paused state -- mic suspended in background */
+#status-dot.paused {
+  background-color: #3a3630;
+  box-shadow: none;
+}
+
+/* -- Main -- */
+main {
+  -webkit-flex: 1;
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding: 0 20px 70px;
+  gap: 0;
+}
+
+/* -- Start prompt -- */
+#start-prompt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -54%);
+  transform: translate(-50%, -54%);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  -webkit-transition: opacity 0.35s;
+  transition: opacity 0.35s;
+}
+
+#start-prompt.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#start-btn {
+  background: none;
+  border: 1px solid #272727;
+  color: #e6e2da;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  cursor: pointer;
+  -webkit-transition: border-color 0.2s;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+#start-btn:active { border-color: #65605a; }
+
+.start-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: #65605a;
+  letter-spacing: 0.08em;
+}
+
+/* -- Tuner wrap -- */
+#tuner-wrap {
+  width: 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 22px;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+}
+
+#tuner-wrap.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* -- Note display -- */
+#note-display {
+  text-align: center;
+  line-height: 1;
+}
+
+#note-name {
+  font-family: Georgia, serif;
+  font-size: 5rem;
+  font-weight: bold;
+  display: block;
+  height: 1.1em;
+  color: #e6e2da;
+}
+
+#string-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #65605a;
+  display: block;
+  margin-top: 4px;
+  height: 1.5em;
+  overflow: hidden;
+}
+
+/* -- Meter -- */
+#meter-wrap {
+  width: 100%;
+  max-width: 340px;
+}
+
+#meter-canvas {
+  width: 100%;
+  display: block;
+}
+
+#cents-display {
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  color: #65605a;
+  letter-spacing: 0.12em;
+  margin-top: 6px;
+  min-height: 1.4em;
+}
+
+/* -- String buttons -- */
+#strings {
+  display: -webkit-flex;
+  display: flex;
+  gap: 14px;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+}
+
+.string-btn {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px;
+  background-color: #1a1a1a;
+  border: 1px solid #272727;
+  cursor: pointer;
+  -webkit-transition: border-color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 0;
+  -webkit-appearance: none;
+}
+
+.string-btn.active {
+  border-color: #65605a;
+  background-color: #212121;
+}
+
+.string-btn.in-tune {
+  border-color: #28955a;
+}
+
+.string-btn.playing {
+  border-color: #3a7fc1;
+}
+
+.btn-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #353230;
+}
+
+.string-btn.active .btn-dot  { background-color: #38c472; }
+.string-btn.in-tune .btn-dot { background-color: #38c472; }
+.string-btn.playing .btn-dot { background-color: #5a9fe0; }
+
+.btn-note {
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  color: #353230;
+  line-height: 1;
+}
+
+.string-btn.active .btn-note,
+.string-btn.playing .btn-note { color: #e6e2da; }
+
+.btn-oct {
+  font-family: 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #353230;
+  letter-spacing: 0.06em;
+}
+
+.string-btn.active .btn-oct { color: #65605a; }
+
+.btn-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #353230;
+  text-align: center;
+}
+
+.string-btn.active .btn-label { color: #65605a; }
+
+/* -- Disclaimer -- */
+#disclaimer {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.46rem;
+  color: #2a2826;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+/* -- Tabs -- */
+nav#tabs {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-top: 1px solid #272727;
+  display: -webkit-flex;
+  display: flex;
+  background-color: #141414;
+}
+
+.tab {
+  -webkit-flex: 1;
+  flex: 1;
+  padding: 11px 0 13px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #353230;
+  cursor: pointer;
+  border-top: 2px solid transparent;
+  -webkit-transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, border-color 0.2s;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tab.active { color: #e6e2da; border-top-color: #65605a; }
+</style>
+</head>
+<body>
+
+<div id="start-prompt">
+  <button id="start-btn">Enable Microphone</button>
+  <p class="start-sub">Tap a string name to hear a reference tone</p>
+</div>
+
+<header>
+  <div class="header-left">
+    <span class="header-title">Uke Tuner</span>
+    <span class="tuning-label">G . C . E . A</span>
+    <span class="version-badge">v1.6.0</span>
+  </div>
+  <div id="status-dot"></div>
+</header>
+
+<main>
+  <div id="tuner-wrap">
+
+    <div id="note-display">
+      <span id="note-name"></span>
+      <span id="string-label"></span>
+    </div>
+
+    <div id="meter-wrap">
+      <canvas id="meter-canvas" width="680" height="200"></canvas>
+      <div id="cents-display"></div>
+    </div>
+
+    <div id="strings"></div>
+
+    <div id="debug" style="display:none;"></div>
+
+  </div>
+</main>
+
+<!-- Chord panel -->
+<div id="chord-panel" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background-color:#141414; padding-top:60px; padding-bottom:56px; overflow-y:auto;">
+
+  <!-- Chord selector -->
+  <div id="chord-controls" style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:14px;padding:16px 20px 0;">
+
+    <!-- Type selector -->
+    <div id="chord-type-tabs" style="display:-webkit-flex;display:flex;gap:0;border:1px solid #272727;">
+      <div class="chord-type-btn active-type" data-type="major" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#e6e2da;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;background-color:#212121;">Major</div>
+      <div class="chord-type-btn" data-type="minor" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Minor</div>
+      <div class="chord-type-btn" data-type="maj7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Maj7</div>
+      <div class="chord-type-btn" data-type="min7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;">Min7</div>
+    </div>
+
+    <!-- Root selector -->
+    <div id="chord-root-row" style="display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;gap:6px;max-width:360px;">
+    </div>
+
+  </div>
+
+  <!-- Diagram display -->
+  <div id="chord-display" style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;padding:20px 20px 0;gap:6px;">
+    <div id="chord-name" style="font-family:Georgia,serif;font-size:2.2rem;font-weight:bold;color:#e6e2da;text-align:center;min-height:1.2em;"></div>
+    <canvas id="chord-canvas" width="300" height="340" style="max-width:240px;display:block;"></canvas>
+    <div id="chord-fingering" style="font-family:'Courier New',monospace;font-size:0.6rem;color:#65605a;letter-spacing:0.12em;text-align:center;margin-top:4px;"></div>
+  </div>
+
+</div>
+
+<div id="disclaimer">vibecoded . use at your own risk</div>
+
+<nav id="tabs">
+  <div class="tab active" data-tab="tuner">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    Tuner
+  </div>
+  <div class="tab" data-tab="chords">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1.5"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="16" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+    Chords
+  </div>
+  <div class="tab" data-tab="library">
+    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Library
+  </div>
+</nav>
+
+<script>
+// -- Strings --
+var STRINGS = [
+  { note: 'G', octave: 4, freq: 392.00, label: '4th' },
+  { note: 'C', octave: 4, freq: 261.63, label: '3rd' },
+  { note: 'E', octave: 4, freq: 329.63, label: '2nd' },
+  { note: 'A', octave: 4, freq: 440.00, label: '1st' }
+];
+
+// -- Hardcoded colors (no CSS variables in JS) --
+var C_BG        = '#141414';
+var C_TRACK     = '#252220';
+var C_TICK      = '#2a2725';
+var C_TICK_CTR  = '#3a3630';
+var C_LABEL     = '#302e2a';
+var C_AMBER     = 'rgba(201,124,12,0.28)';
+var C_GREEN_FILL= 'rgba(56,196,114,0.22)';
+var C_BLUE_FILL = 'rgba(58,127,193,0.25)';
+var C_NEEDLE_DEF= '#e6e2da';
+var C_NEEDLE_IN = '#38c472';
+var C_NEEDLE_BLU= '#5a9fe0';
+var C_DOT_DEF   = '#e6e2da';
+var C_DOT_IN    = '#38c472';
+var C_DOT_BLU   = '#5a9fe0';
+
+// -- DOM --
+var startPrompt   = document.getElementById('start-prompt');
+var startBtn      = document.getElementById('start-btn');
+var tunerWrap     = document.getElementById('tuner-wrap');
+var noteNameEl    = document.getElementById('note-name');
+var stringLabelEl = document.getElementById('string-label');
+var meterCanvas   = document.getElementById('meter-canvas');
+var centsEl       = document.getElementById('cents-display');
+var statusDot     = document.getElementById('status-dot');
+var stringsEl     = document.getElementById('strings');
+var mCtx          = meterCanvas.getContext('2d');
+
+// -- State --
+var audioCtx, analyser, rafId;
+var isPlaying        = false;
+var smoothCents      = 0;
+var currentStringIdx = -1;
+var activeOsc  = null, activeGain  = null;
+var activeOsc2 = null, activeGain2 = null;
+var playingStringIdx = -1;
+
+// -- Build string buttons --
+for (var si = 0; si < STRINGS.length; si++) {
+  (function(i) {
+    var s   = STRINGS[i];
+    var btn = document.createElement('div');
+    btn.className = 'string-btn';
+    btn.id = 'sbtn-' + i;
+    btn.innerHTML =
+      '<div class="btn-dot"></div>' +
+      '<div class="btn-note">' + s.note + '</div>' +
+      '<div class="btn-oct">' + s.octave + '</div>' +
+      '<div class="btn-label">' + s.label + '</div>';
+    btn.addEventListener('click', function() { onStringTap(i); });
+    stringsEl.appendChild(btn);
+  })(si);
+}
+
+// -- Meter drawing --
+var MW = meterCanvas.width;
+var MH = meterCanvas.height;
+
+function drawMeter(cents, state) {
+  mCtx.clearRect(0, 0, MW, MH);
+
+  var midX      = MW / 2;
+  var trackY    = MH / 2 + 10;
+  var trackW    = MW - 100;
+  var trackLeft = 50;
+
+  // Track line
+  mCtx.fillStyle = C_TRACK;
+  mCtx.fillRect(trackLeft, trackY - 1, trackW, 2);
+
+  // Tick marks
+  for (var c = -50; c <= 50; c += 10) {
+    var x   = midX + (c / 50) * (trackW / 2);
+    var big = (c === 0 || c === -50 || c === 50);
+    mCtx.fillStyle = (c === 0) ? C_TICK_CTR : C_TICK;
+    mCtx.fillRect(x - 0.75, trackY - (big ? 10 : 6), 1.5, big ? 20 : 12);
+  }
+
+  // Flat / sharp labels
+  mCtx.font = '400 20px Georgia, serif';
+  mCtx.fillStyle = C_LABEL;
+  mCtx.textAlign = 'center';
+  mCtx.fillText('b', trackLeft - 18, trackY + 8);
+  mCtx.fillText('#', MW - trackLeft + 18, trackY + 8);
+
+  if (state === 'idle') return;
+
+  var cc     = Math.max(-50, Math.min(50, cents));
+  var barX   = midX + (cc / 50) * (trackW / 2);
+  var inTune = Math.abs(cc) < 5;
+
+  // Fill zone from center
+  var fillL = Math.min(midX, barX);
+  var fillR = Math.max(midX, barX);
+  if (fillR - fillL > 1) {
+    if (state === 'playing')       mCtx.fillStyle = C_BLUE_FILL;
+    else if (inTune)               mCtx.fillStyle = C_GREEN_FILL;
+    else                           mCtx.fillStyle = C_AMBER;
+    mCtx.fillRect(fillL, trackY - 16, fillR - fillL, 32);
+  }
+
+  // Needle color
+  var needleColor = state === 'playing' ? C_NEEDLE_BLU
+                  : inTune             ? C_NEEDLE_IN
+                  :                      C_NEEDLE_DEF;
+
+  var barH = 60, barT = 3;
+  var bTop = trackY - barH / 2;
+
+  // Glow via shadow
+  mCtx.save();
+  mCtx.shadowColor = needleColor;
+  mCtx.shadowBlur  = (inTune && state !== 'playing') ? 16 : 8;
+  mCtx.fillStyle   = needleColor;
+  // Plain rect (no roundRect -- iOS Safari compat)
+  mCtx.fillRect(barX - barT / 2, bTop, barT, barH);
+  mCtx.restore();
+
+  // Pivot dot
+  mCtx.beginPath();
+  mCtx.arc(barX, trackY, 5, 0, Math.PI * 2);
+  mCtx.fillStyle = needleColor;
+  mCtx.fill();
+}
+
+drawMeter(0, 'idle');
+
+var debugEl = document.getElementById('debug');
+
+// -- Autocorrelation pitch detection --
+function autoCorrelate(sampleRate) {
+  var SIZE = analyser.fftSize;
+  var buf  = new Uint8Array(SIZE);
+  analyser.getByteTimeDomainData(buf);
+
+  // Convert to float centered on zero
+  var float = new Float32Array(SIZE);
+  var rms = 0;
+  for (var i = 0; i < SIZE; i++) {
+    float[i] = (buf[i] - 128) / 128;
+    rms += float[i] * float[i];
+  }
+  rms = Math.sqrt(rms / SIZE);
+
+  // Debug: show min/max of full buffer and rms
+  if (debugEl) {
+    var mn = 255, mx = 0;
+    for (var d = 0; d < SIZE; d++) {
+      if (buf[d] < mn) mn = buf[d];
+      if (buf[d] > mx) mx = buf[d];
+    }
+    debugEl.textContent = 'min:' + mn + ' max:' + mx + ' range:' + (mx - mn) +
+      ' | rms: ' + rms.toFixed(5) + ' | sr: ' + sampleRate;
+  }
+
+  if (rms < 0.001) return -1;
+
+  // Ukulele range: C4(261Hz) to A4(440Hz) with margin
+  // At 48000Hz: period of 440Hz = 109 samples, 200Hz = 240 samples
+  var minPeriod = Math.floor(sampleRate / 520);  // ~92 samples
+  var maxPeriod = Math.ceil(sampleRate / 200);   // ~240 samples
+  var MAX = Math.min(Math.floor(SIZE / 2), maxPeriod + 1);
+
+  // Build normalized autocorrelation (NSDF-style)
+  var bestOffset = -1;
+  var bestVal = -1;
+
+  for (var offset = minPeriod; offset <= MAX; offset++) {
+    var num = 0, denom = 0;
+    for (var j = 0; j < SIZE - offset; j++) {
+      num   += float[j] * float[j + offset];
+      denom += float[j] * float[j] + float[j + offset] * float[j + offset];
+    }
+    var nsdf = denom > 0 ? 2 * num / denom : 0;
+    if (nsdf > bestVal) {
+      bestVal = nsdf;
+      bestOffset = offset;
+    }
+  }
+
+  if (debugEl) {
+    debugEl.textContent += ' | off:' + bestOffset + ' val:' + (bestVal).toFixed(3);
+  }
+
+  if (bestOffset === -1 || bestVal < 0.4) return -1;
+
+  return sampleRate / bestOffset;
+}
+
+function nearestString(freq) {
+  var best = 0, bestDist = Infinity;
+  for (var i = 0; i < STRINGS.length; i++) {
+    var d = Math.abs(1200 * Math.log2(freq / STRINGS[i].freq));
+    if (d < bestDist) { bestDist = d; best = i; }
+  }
+  return { idx: best, cents: 1200 * Math.log2(freq / STRINGS[best].freq) };
+}
+
+// -- Detection loop with lock-on-attack --
+var SMOOTH = 0.06;
+var smoothFreq   = 0;
+var stableCount  = 0;
+var STABLE_NEEDED = 3;
+
+// Attack / lock state
+var ATTACK_THRESHOLD = 0.018;  // RMS spike = new pluck
+var LOCK_DURATION    = 600;    // ms to hold reading after attack
+var prevRms          = 0;
+var lockedUntil      = 0;      // timestamp when lock expires
+var lockedCents      = null;   // frozen cents value while locked
+var lockedIdx        = -1;
+
+function loop() {
+  rafId = requestAnimationFrame(loop);
+  if (!analyser || isPlaying) return;
+
+  var now = Date.now();
+
+  // Read RMS directly from byte buffer
+  var sizeBuf = analyser.fftSize;
+  var rmsBuf  = new Uint8Array(sizeBuf);
+  analyser.getByteTimeDomainData(rmsBuf);
+  var rmsSum = 0;
+  for (var ri = 0; ri < sizeBuf; ri++) {
+    var rv = (rmsBuf[ri] - 128) / 128;
+    rmsSum += rv * rv;
+  }
+  var currentRms = Math.sqrt(rmsSum / sizeBuf);
+
+  // Detect attack: RMS jumped significantly
+  var isAttack = (currentRms - prevRms) > ATTACK_THRESHOLD && currentRms > 0.015;
+  prevRms = currentRms;
+
+  if (isAttack) {
+    // New pluck -- unlock so we take a fresh reading
+    lockedCents  = null;
+    lockedIdx    = -1;
+    lockedUntil  = 0;
+    smoothFreq   = 0;
+    stableCount  = 0;
+    smoothCents  = 0;
+  }
+
+  // If locked and not expired, freeze the display
+  if (lockedCents !== null && now < lockedUntil) {
+    drawMeter(lockedCents, 'listening');
+    return;
+  }
+
+  // Not locked -- run detection
+  var freq = autoCorrelate(audioCtx.sampleRate);
+
+  if (freq < 200 || freq > 600) {
+    stableCount = 0;
+    if (lockedCents === null) drawMeter(smoothCents, 'idle');
+    return;
+  }
+
+  if (smoothFreq === 0) { smoothFreq = freq; }
+  smoothFreq += (freq - smoothFreq) * 0.1;
+
+  if (Math.abs(freq - smoothFreq) > 30) { stableCount = 0; return; }
+
+  stableCount++;
+  if (stableCount < STABLE_NEEDED) return;
+
+  var result = nearestString(smoothFreq);
+  var idx    = result.idx;
+  var cents  = result.cents;
+
+  smoothCents += (cents - smoothCents) * SMOOTH;
+  currentStringIdx = idx;
+  var inTune = Math.abs(smoothCents) < 5;
+
+  updateButtons(idx, false, inTune);
+
+  noteNameEl.textContent    = STRINGS[idx].note + STRINGS[idx].octave;
+  stringLabelEl.textContent = STRINGS[idx].label.toUpperCase() + ' STRING';
+  noteNameEl.style.color    = inTune ? '#38c472' : '#e6e2da';
+
+  var sign = smoothCents >= 0 ? '+' : '';
+  centsEl.textContent = sign + Math.round(smoothCents) + ' \u00a2';
+  centsEl.style.color = inTune ? '#38c472' : '#eda830';
+
+  drawMeter(smoothCents, 'listening');
+
+  // Lock reading once stable enough
+  if (stableCount >= STABLE_NEEDED + 4 && lockedCents === null) {
+    lockedCents = smoothCents;
+    lockedIdx   = idx;
+    lockedUntil = now + LOCK_DURATION;
+  }
+}
+
+// -- Reference tone --
+function stopTone() {
+  if (activeOsc) {
+    try {
+      var now = audioCtx.currentTime;
+      activeGain.gain.cancelScheduledValues(now);
+      activeGain.gain.setValueAtTime(activeGain.gain.value, now);
+      activeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      activeOsc.stop(now + 0.08);
+      if (activeOsc2) {
+        activeGain2.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        activeOsc2.stop(now + 0.08);
+      }
+    } catch(e) {}
+    activeOsc = activeGain = activeOsc2 = activeGain2 = null;
+  }
+}
+
+function playReferenceTone(idx) {
+  if (!audioCtx) return;
+  stopTone();
+
+  isPlaying        = true;
+  playingStringIdx = idx;
+  statusDot.style.backgroundColor = '#3a7fc1';
+  updateButtons(idx, true, false);
+  noteNameEl.textContent    = STRINGS[idx].note + STRINGS[idx].octave;
+  noteNameEl.style.color    = '#5a9fe0';
+  stringLabelEl.textContent = 'REFERENCE TONE';
+  centsEl.textContent       = STRINGS[idx].freq.toFixed(2) + ' Hz';
+  centsEl.style.color       = '#5a9fe0';
+  drawMeter(0, 'playing');
+
+  var now   = audioCtx.currentTime;
+  var osc   = audioCtx.createOscillator();
+  var gain  = audioCtx.createGain();
+  osc.type  = 'triangle';
+  osc.frequency.setValueAtTime(STRINGS[idx].freq, now);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
+  gain.gain.setValueAtTime(0.5, now + 0.5);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 2.4);
+
+  var osc2  = audioCtx.createOscillator();
+  var gain2 = audioCtx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(STRINGS[idx].freq * 1.0015, now);
+  gain2.gain.setValueAtTime(0.15, now);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+  osc2.connect(gain2);
+  gain2.connect(audioCtx.destination);
+  osc2.start(now);
+  osc2.stop(now + 2.4);
+
+  activeOsc = osc; activeGain = gain;
+  activeOsc2 = osc2; activeGain2 = gain2;
+
+  osc.onended = function() {
+    isPlaying        = false;
+    playingStringIdx = -1;
+    statusDot.style.backgroundColor = '#28955a';
+    updateButtons(currentStringIdx, false, false);
+    noteNameEl.style.color = '#e6e2da';
+    if (currentStringIdx >= 0) {
+      noteNameEl.textContent    = STRINGS[currentStringIdx].note + STRINGS[currentStringIdx].octave;
+      stringLabelEl.textContent = STRINGS[currentStringIdx].label.toUpperCase() + ' STRING';
+    } else {
+      noteNameEl.textContent    = '';
+      stringLabelEl.textContent = '\u00a0';
+    }
+    centsEl.textContent = '\u00a0';
+    drawMeter(0, 'idle');
+  };
+}
+
+function updateButtons(activeIdx, playing, inTune) {
+  for (var i = 0; i < STRINGS.length; i++) {
+    var btn = document.getElementById('sbtn-' + i);
+    btn.classList.remove('active', 'in-tune', 'playing');
+    if (playing && i === playingStringIdx) {
+      btn.classList.add('playing');
+    } else if (!playing && i === activeIdx) {
+      btn.classList.add('active');
+      if (inTune) btn.classList.add('in-tune');
+    }
+  }
+}
+
+function onStringTap(i) {
+  if (!audioCtx) return;
+  playReferenceTone(i);
+}
+
+// -- Start / mic init --
+function initAudio(stream) {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume().then(function() {
+
+    // iOS requires AudioContext to produce output before input flows.
+    // Play a silent buffer to prime it.
+    var silentBuf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    var silent    = audioCtx.createBufferSource();
+    silent.buffer = silentBuf;
+    silent.connect(audioCtx.destination);
+    silent.start(0);
+
+    analyser         = audioCtx.createAnalyser();
+    analyser.fftSize = 4096;
+
+    var source = audioCtx.createMediaStreamSource(stream);
+
+    // iOS also needs the mic source routed toward the destination
+    // (even at zero gain) to actually deliver samples to the analyser.
+    var zeroGain = audioCtx.createGain();
+    zeroGain.gain.value = 0.0001;
+    source.connect(zeroGain);
+    zeroGain.connect(audioCtx.destination);
+
+    source.connect(analyser);
+
+    startPrompt.classList.add('hidden');
+    tunerWrap.classList.add('active');
+    statusDot.style.backgroundColor = '#28955a';
+    drawMeter(0, 'idle');
+    loop();
+  });
+}
+
+startBtn.addEventListener('click', function() {
+  // Try with ideal constraints first, fall back to plain true on failure
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } })
+    .then(function(stream) {
+      initAudio(stream);
+    })
+    .catch(function() {
+      // iOS may reject the constraint object -- retry with minimal constraints
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+          initAudio(stream);
+        })
+        .catch(function() {
+          startBtn.textContent = 'Microphone access denied';
+          startBtn.style.color = '#eda830';
+          startBtn.style.borderColor = '#eda830';
+        });
+    });
+});
+
+// -- Tabs with panel switching --
+var chordPanel = document.getElementById('chord-panel');
+var tunerMain  = document.querySelector('main');
+
+var tabs = document.querySelectorAll('.tab');
+for (var ti = 0; ti < tabs.length; ti++) {
+  tabs[ti].addEventListener('click', function() {
+    for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+    this.classList.add('active');
+    var which = this.getAttribute('data-tab');
+    if (which === 'chords') {
+      tunerMain.style.display   = 'none';
+      chordPanel.style.display  = 'block';
+      // Pause detection but keep audio alive
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    } else {
+      tunerMain.style.display   = '';
+      chordPanel.style.display  = 'none';
+      // Resume detection if mic is active
+      if (audioCtx && audioCtx.state === 'running' && !rafId && !isPlaying) loop();
+    }
+  });
+}
+
+// -- Background / focus detection --
+function pauseTuner() {
+  if (!audioCtx || audioCtx.state === 'suspended') return;
+  cancelAnimationFrame(rafId);
+  rafId = null;
+  audioCtx.suspend();
+  statusDot.className = 'paused';
+  noteNameEl.textContent    = '';
+  stringLabelEl.textContent = '';
+  centsEl.textContent       = '';
+  noteNameEl.style.color    = '#e6e2da';
+  smoothFreq   = 0;
+  stableCount  = 0;
+  smoothCents  = 0;
+  lockedCents  = null;
+  lockedIdx    = -1;
+  drawMeter(0, 'idle');
+}
+
+function resumeTuner() {
+  if (!audioCtx || audioCtx.state === 'running') return;
+  audioCtx.resume().then(function() {
+    statusDot.style.backgroundColor = '#28955a';
+    statusDot.className = '';
+    var activeTab = document.querySelector('.tab.active');
+    var onTuner = !activeTab || activeTab.getAttribute('data-tab') === 'tuner';
+    if (!rafId && onTuner && !isPlaying) loop();
+  });
+}
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') { pauseTuner(); }
+  else { resumeTuner(); }
+});
+
+window.addEventListener('blur',  function() { pauseTuner();  });
+window.addEventListener('focus', function() { resumeTuner(); });
+
+// ============================================================
+// -- Chord system --
+// ============================================================
+// Fret data: [G-string, C-string, E-string, A-string]  0=open
+// Format: { frets:[g,c,e,a], fingers:[g,c,e,a] (0=open) }
+
+var CHORD_DATA = {
+  'C':    { major:  { frets:[0,0,0,3], fingers:[0,0,0,3] },
+            minor:  { frets:[0,3,3,3], fingers:[0,3,3,3] },  // barre 3
+            maj7:   { frets:[0,0,0,2], fingers:[0,0,0,2] },
+            min7:   { frets:[0,3,3,3], fingers:[0,1,2,3] } }, // actually 0333 barre
+  'Db':   { major:  { frets:[1,1,1,4], fingers:[1,1,1,4] },
+            minor:  { frets:[1,4,4,4], fingers:[1,2,3,4] },
+            maj7:   { frets:[1,1,1,3], fingers:[1,1,1,3] },
+            min7:   { frets:[1,1,1,1], fingers:[1,1,1,1] } },
+  'D':    { major:  { frets:[2,2,2,0], fingers:[1,2,3,0] },
+            minor:  { frets:[2,2,1,0], fingers:[2,3,1,0] },
+            maj7:   { frets:[2,2,2,4], fingers:[1,2,3,4] },
+            min7:   { frets:[2,2,1,2], fingers:[2,3,1,4] } },
+  'Eb':   { major:  { frets:[0,3,3,1], fingers:[0,3,4,1] },
+            minor:  { frets:[3,3,2,1], fingers:[3,4,2,1] },
+            maj7:   { frets:[3,3,3,5], fingers:[1,2,3,4] },
+            min7:   { frets:[3,3,2,3], fingers:[2,3,1,4] } },
+  'E':    { major:  { frets:[4,4,4,2], fingers:[2,3,4,1] },
+            minor:  { frets:[0,4,3,2], fingers:[0,3,2,1] },
+            maj7:   { frets:[1,3,0,2], fingers:[1,3,0,2] },
+            min7:   { frets:[0,2,0,2], fingers:[0,2,0,3] } },
+  'F':    { major:  { frets:[2,0,1,0], fingers:[2,0,1,0] },
+            minor:  { frets:[1,0,1,3], fingers:[1,0,2,4] },
+            maj7:   { frets:[2,4,1,3], fingers:[2,4,1,3] },
+            min7:   { frets:[1,3,1,3], fingers:[1,3,1,3] } },
+  'F#':   { major:  { frets:[3,1,2,1], fingers:[3,1,2,1] },
+            minor:  { frets:[2,1,2,0], fingers:[2,1,3,0] },
+            maj7:   { frets:[3,5,2,4], fingers:[2,4,1,3] },
+            min7:   { frets:[2,4,2,4], fingers:[1,3,1,3] } },
+  'G':    { major:  { frets:[0,2,3,2], fingers:[0,1,3,2] },
+            minor:  { frets:[0,2,3,1], fingers:[0,2,3,1] },
+            maj7:   { frets:[0,2,2,2], fingers:[0,1,2,3] },
+            min7:   { frets:[0,2,3,3], fingers:[0,1,2,3] } },
+  'Ab':   { major:  { frets:[5,3,4,3], fingers:[4,1,3,2] },
+            minor:  { frets:[1,3,4,2], fingers:[1,3,4,2] },
+            maj7:   { frets:[1,3,3,3], fingers:[1,2,3,4] },
+            min7:   { frets:[1,3,4,4], fingers:[1,2,3,4] } },
+  'A':    { major:  { frets:[2,1,0,0], fingers:[2,1,0,0] },
+            minor:  { frets:[2,0,0,0], fingers:[2,0,0,0] },
+            maj7:   { frets:[1,1,0,0], fingers:[1,2,0,0] },
+            min7:   { frets:[0,0,0,0], fingers:[0,0,0,0] } },
+  'Bb':   { major:  { frets:[3,2,1,1], fingers:[4,3,1,1] },
+            minor:  { frets:[3,1,1,1], fingers:[4,1,1,1] },
+            maj7:   { frets:[2,2,1,0], fingers:[2,3,1,0] },
+            min7:   { frets:[3,1,1,3], fingers:[3,1,1,4] } },
+  'B':    { major:  { frets:[4,3,2,2], fingers:[4,3,1,1] },
+            minor:  { frets:[4,2,2,2], fingers:[4,1,2,3] },
+            maj7:   { frets:[3,3,2,1], fingers:[3,4,2,1] },
+            min7:   { frets:[2,2,2,2], fingers:[1,1,1,1] } }
+};
+
+var ROOTS = ['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+var currentRoot = 'C';
+var currentType = 'major';
+
+// Build root buttons
+var rootRow = document.getElementById('chord-root-row');
+for (var ri = 0; ri < ROOTS.length; ri++) {
+  (function(root) {
+    var btn = document.createElement('div');
+    btn.style.cssText = 'font-family:\'Courier New\',monospace;font-size:0.62rem;letter-spacing:0.08em;padding:7px 10px;border:1px solid #272727;cursor:pointer;color:#65605a;min-width:36px;text-align:center;';
+    btn.textContent = root;
+    btn.setAttribute('data-root', root);
+    if (root === 'C') { btn.style.color = '#e6e2da'; btn.style.borderColor = '#65605a'; btn.style.backgroundColor = '#212121'; }
+    btn.addEventListener('click', function() {
+      currentRoot = root;
+      document.querySelectorAll('#chord-root-row div').forEach(function(b) {
+        b.style.color = '#65605a'; b.style.borderColor = '#272727'; b.style.backgroundColor = '';
+      });
+      btn.style.color = '#e6e2da'; btn.style.borderColor = '#65605a'; btn.style.backgroundColor = '#212121';
+      renderChord();
+    });
+    rootRow.appendChild(btn);
+  })(ROOTS[ri]);
+}
+
+// Type buttons
+document.querySelectorAll('.chord-type-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    currentType = btn.getAttribute('data-type');
+    document.querySelectorAll('.chord-type-btn').forEach(function(b) {
+      b.style.color = '#65605a'; b.style.backgroundColor = '';
+    });
+    btn.style.color = '#e6e2da'; btn.style.backgroundColor = '#212121';
+    renderChord();
+  });
+});
+
+// Draw chord diagram on canvas
+var cc   = document.getElementById('chord-canvas');
+var cCtx = cc.getContext('2d');
+
+function renderChord() {
+  var data = CHORD_DATA[currentRoot] && CHORD_DATA[currentRoot][currentType];
+  if (!data) return;
+
+  var frets   = data.frets;
+  var fingers = data.fingers;
+
+  // Chord name label
+  var nameEl = document.getElementById('chord-name');
+  var suffix = { major:'', minor:'m', maj7:'maj7', min7:'m7' }[currentType];
+  nameEl.textContent = currentRoot + suffix;
+
+  // Fingering text  G C E A
+  var fEl = document.getElementById('chord-fingering');
+  fEl.textContent = 'G:' + frets[0] + '  C:' + frets[1] + '  E:' + frets[2] + '  A:' + frets[3];
+
+  // Canvas dimensions
+  var W = cc.width, H = cc.height;
+  cCtx.clearRect(0, 0, W, H);
+
+  // Determine fret window
+  var minFret = 99, maxFret = 0;
+  for (var fi = 0; fi < 4; fi++) {
+    if (frets[fi] > 0 && frets[fi] < minFret) minFret = frets[fi];
+    if (frets[fi] > maxFret) maxFret = frets[fi];
+  }
+  if (minFret === 99) minFret = 0;
+  var startFret = (minFret <= 1) ? 0 : minFret - 1;
+  var numFrets  = Math.max(4, maxFret - startFret + 1);
+
+  // Layout
+  var padL = 30, padR = 20, padT = 36, padB = 30;
+  var gridW = W - padL - padR;
+  var gridH = H - padT - padB;
+  var strGap  = gridW / 3;   // 4 strings = 3 gaps
+  var fretGap = gridH / numFrets;
+
+  // Nut (thick bar if starting at fret 0)
+  if (startFret === 0) {
+    cCtx.fillStyle = '#e6e2da';
+    cCtx.fillRect(padL, padT - 6, gridW, 5);
+  } else {
+    // Show fret number
+    cCtx.font = '400 20px Courier New, monospace';
+    cCtx.fillStyle = '#65605a';
+    cCtx.textAlign = 'right';
+    cCtx.fillText((startFret + 1) + 'fr', padL - 6, padT + fretGap * 0.6);
+  }
+
+  // Fret lines
+  for (var f = 0; f <= numFrets; f++) {
+    var fy = padT + f * fretGap;
+    cCtx.fillStyle = f === 0 && startFret > 0 ? '#353230' : '#2a2725';
+    cCtx.fillRect(padL, fy - 0.75, gridW, 1.5);
+  }
+
+  // String lines
+  for (var s = 0; s < 4; s++) {
+    var sx = padL + s * strGap;
+    cCtx.fillStyle = '#2a2725';
+    cCtx.fillRect(sx - 0.75, padT, 1.5, gridH);
+  }
+
+  // String labels at bottom
+  var strLabels = ['G','C','E','A'];
+  cCtx.font = '400 18px Courier New, monospace';
+  cCtx.fillStyle = '#3a3630';
+  cCtx.textAlign = 'center';
+  for (var sl = 0; sl < 4; sl++) {
+    cCtx.fillText(strLabels[sl], padL + sl * strGap, H - 6);
+  }
+
+  // Dots
+  for (var d = 0; d < 4; d++) {
+    var fret = frets[d];
+    var sx2  = padL + d * strGap;
+
+    if (fret === 0) {
+      // Open string circle
+      cCtx.beginPath();
+      cCtx.arc(sx2, padT - 18, 7, 0, Math.PI * 2);
+      cCtx.strokeStyle = '#65605a';
+      cCtx.lineWidth   = 1.5;
+      cCtx.stroke();
+    } else {
+      var relFret = fret - startFret;
+      var dotY    = padT + (relFret - 0.5) * fretGap;
+      cCtx.beginPath();
+      cCtx.arc(sx2, dotY, 10, 0, Math.PI * 2);
+      cCtx.fillStyle = '#e6e2da';
+      cCtx.fill();
+      // Finger number
+      if (fingers[d] > 0) {
+        cCtx.font = '400 14px Courier New, monospace';
+        cCtx.fillStyle = '#141414';
+        cCtx.textAlign = 'center';
+        cCtx.fillText(fingers[d], sx2, dotY + 5);
+      }
+    }
+  }
+}
+
+// Initial render
+renderChord();
+</script>
+</body>
+</html>

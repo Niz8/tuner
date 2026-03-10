@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -9,266 +8,266 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-height: 100%;
-background-color: #141414;
-color: #e6e2da;
-font-family: Georgia, ‘Times New Roman’, serif;
-overflow: hidden;
--webkit-user-select: none;
-user-select: none;
+  height: 100%;
+  background-color: #141414;
+  color: #e6e2da;
+  font-family: Georgia, 'Times New Roman', serif;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body {
-display: -webkit-flex;
-display: flex;
--webkit-flex-direction: column;
-flex-direction: column;
--webkit-align-items: center;
-align-items: center;
-height: 100dvh;
-height: 100vh;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  height: 100dvh;
+  height: 100vh;
 }
 
-/* – Header – */
+/* -- Header -- */
 header {
-width: 100%;
-padding: 18px 22px 0;
-display: -webkit-flex;
-display: flex;
--webkit-align-items: baseline;
-align-items: baseline;
--webkit-justify-content: space-between;
-justify-content: space-between;
+  width: 100%;
+  padding: 18px 22px 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
 }
 
 .header-left {
-display: -webkit-flex;
-display: flex;
--webkit-align-items: baseline;
-align-items: baseline;
-gap: 10px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .header-title {
-font-family: Georgia, serif;
-font-size: 1.3rem;
-font-weight: normal;
-color: #e6e2da;
-letter-spacing: 0.01em;
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: normal;
+  color: #e6e2da;
+  letter-spacing: 0.01em;
 }
 
 .tuning-label {
-font-family: ‘Courier New’, monospace;
-font-size: 0.6rem;
-color: #65605a;
-letter-spacing: 0.16em;
-text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: #65605a;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .version-badge {
-font-family: ‘Courier New’, monospace;
-font-size: 0.48rem;
-color: #353230;
-letter-spacing: 0.12em;
+  font-family: 'Courier New', monospace;
+  font-size: 0.48rem;
+  color: #353230;
+  letter-spacing: 0.12em;
 }
 
 #status-dot {
-width: 7px;
-height: 7px;
-border-radius: 50%;
-background-color: #353230;
--webkit-transition: background-color 0.4s;
-transition: background-color 0.4s;
-flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #353230;
+  -webkit-transition: background-color 0.4s;
+  transition: background-color 0.4s;
+  flex-shrink: 0;
 }
-/* paused state – mic suspended in background */
+/* paused state -- mic suspended in background */
 #status-dot.paused {
-background-color: #3a3630;
-box-shadow: none;
+  background-color: #3a3630;
+  box-shadow: none;
 }
 
-/* – Main – */
+/* -- Main -- */
 main {
--webkit-flex: 1;
-flex: 1;
-width: 100%;
-max-width: 480px;
-display: -webkit-flex;
-display: flex;
--webkit-flex-direction: column;
-flex-direction: column;
--webkit-align-items: center;
-align-items: center;
--webkit-justify-content: center;
-justify-content: center;
-padding: 0 20px 70px;
-gap: 0;
+  -webkit-flex: 1;
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding: 0 20px 70px;
+  gap: 0;
 }
 
-/* – Start prompt – */
+/* -- Start prompt -- */
 #start-prompt {
-position: absolute;
-top: 50%;
-left: 50%;
--webkit-transform: translate(-50%, -54%);
-transform: translate(-50%, -54%);
-display: -webkit-flex;
-display: flex;
--webkit-flex-direction: column;
-flex-direction: column;
--webkit-align-items: center;
-align-items: center;
-gap: 14px;
-text-align: center;
--webkit-transition: opacity 0.35s;
-transition: opacity 0.35s;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -54%);
+  transform: translate(-50%, -54%);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  -webkit-transition: opacity 0.35s;
+  transition: opacity 0.35s;
 }
 
 #start-prompt.hidden {
-opacity: 0;
-pointer-events: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 #start-btn {
-background: none;
-border: 1px solid #272727;
-color: #e6e2da;
-font-family: ‘Courier New’, monospace;
-font-size: 0.7rem;
-letter-spacing: 0.16em;
-text-transform: uppercase;
-padding: 14px 32px;
-cursor: pointer;
--webkit-transition: border-color 0.2s;
-transition: border-color 0.2s;
--webkit-appearance: none;
-border-radius: 0;
+  background: none;
+  border: 1px solid #272727;
+  color: #e6e2da;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  cursor: pointer;
+  -webkit-transition: border-color 0.2s;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  border-radius: 0;
 }
 
 #start-btn:active { border-color: #65605a; }
 
 .start-sub {
-font-family: ‘Courier New’, monospace;
-font-size: 0.6rem;
-color: #65605a;
-letter-spacing: 0.08em;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: #65605a;
+  letter-spacing: 0.08em;
 }
 
-/* – Tuner wrap – */
+/* -- Tuner wrap -- */
 #tuner-wrap {
-width: 100%;
-display: -webkit-flex;
-display: flex;
--webkit-flex-direction: column;
-flex-direction: column;
--webkit-align-items: center;
-align-items: center;
-gap: 22px;
-opacity: 0;
-pointer-events: none;
--webkit-transition: opacity 0.5s;
-transition: opacity 0.5s;
+  width: 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 22px;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transition: opacity 0.5s;
+  transition: opacity 0.5s;
 }
 
 #tuner-wrap.active {
-opacity: 1;
-pointer-events: all;
+  opacity: 1;
+  pointer-events: all;
 }
 
-/* – Note display – */
+/* -- Note display -- */
 #note-display {
-text-align: center;
-line-height: 1;
+  text-align: center;
+  line-height: 1;
 }
 
 #note-name {
-font-family: Georgia, serif;
-font-size: 5rem;
-font-weight: bold;
-display: block;
-height: 1.1em;
-color: #e6e2da;
+  font-family: Georgia, serif;
+  font-size: 5rem;
+  font-weight: bold;
+  display: block;
+  height: 1.1em;
+  color: #e6e2da;
 }
 
 #string-label {
-font-family: ‘Courier New’, monospace;
-font-size: 0.58rem;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: #65605a;
-display: block;
-margin-top: 4px;
-height: 1.5em;
-overflow: hidden;
+  font-family: 'Courier New', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #65605a;
+  display: block;
+  margin-top: 4px;
+  height: 1.5em;
+  overflow: hidden;
 }
 
-/* – Meter – */
+/* -- Meter -- */
 #meter-wrap {
-width: 100%;
-max-width: 340px;
+  width: 100%;
+  max-width: 340px;
 }
 
 #meter-canvas {
-width: 100%;
-display: block;
+  width: 100%;
+  display: block;
 }
 
 #cents-display {
-text-align: center;
-font-family: ‘Courier New’, monospace;
-font-size: 0.62rem;
-color: #65605a;
-letter-spacing: 0.12em;
-margin-top: 6px;
-min-height: 1.4em;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  color: #65605a;
+  letter-spacing: 0.12em;
+  margin-top: 6px;
+  min-height: 1.4em;
 }
 
-/* – String buttons – */
+/* -- String buttons -- */
 #strings {
-display: -webkit-flex;
-display: flex;
-gap: 14px;
--webkit-align-items: stretch;
-align-items: stretch;
+  display: -webkit-flex;
+  display: flex;
+  gap: 14px;
+  -webkit-align-items: stretch;
+  align-items: stretch;
 }
 
 .string-btn {
-display: -webkit-flex;
-display: flex;
--webkit-flex-direction: column;
-flex-direction: column;
--webkit-align-items: center;
-align-items: center;
-gap: 7px;
-padding: 12px 14px;
-background-color: #1a1a1a;
-border: 1px solid #272727;
-cursor: pointer;
--webkit-transition: border-color 0.2s, background-color 0.2s;
-transition: border-color 0.2s, background-color 0.2s;
--webkit-tap-highlight-color: transparent;
-border-radius: 0;
--webkit-appearance: none;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px;
+  background-color: #1a1a1a;
+  border: 1px solid #272727;
+  cursor: pointer;
+  -webkit-transition: border-color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 0;
+  -webkit-appearance: none;
 }
 
 .string-btn.active {
-border-color: #65605a;
-background-color: #212121;
+  border-color: #65605a;
+  background-color: #212121;
 }
 
 .string-btn.in-tune {
-border-color: #28955a;
+  border-color: #28955a;
 }
 
 .string-btn.playing {
-border-color: #3a7fc1;
+  border-color: #3a7fc1;
 }
 
 .btn-dot {
-width: 5px;
-height: 5px;
-border-radius: 50%;
-background-color: #353230;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #353230;
 }
 
 .string-btn.active .btn-dot  { background-color: #38c472; }
@@ -276,98 +275,97 @@ background-color: #353230;
 .string-btn.playing .btn-dot { background-color: #5a9fe0; }
 
 .btn-note {
-font-family: Georgia, serif;
-font-size: 1.5rem;
-color: #353230;
-line-height: 1;
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  color: #353230;
+  line-height: 1;
 }
 
 .string-btn.active .btn-note,
 .string-btn.playing .btn-note { color: #e6e2da; }
 
 .btn-oct {
-font-family: ‘Courier New’, monospace;
-font-size: 0.5rem;
-color: #353230;
-letter-spacing: 0.06em;
+  font-family: 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #353230;
+  letter-spacing: 0.06em;
 }
 
 .string-btn.active .btn-oct { color: #65605a; }
 
 .btn-label {
-font-family: ‘Courier New’, monospace;
-font-size: 0.48rem;
-letter-spacing: 0.08em;
-text-transform: uppercase;
-color: #353230;
-text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #353230;
+  text-align: center;
 }
 
 .string-btn.active .btn-label { color: #65605a; }
 
-/* – Disclaimer – */
+/* -- Disclaimer -- */
 #disclaimer {
-position: absolute;
-bottom: 50px;
-left: 0;
-right: 0;
-text-align: center;
-font-family: ‘Courier New’, monospace;
-font-size: 0.46rem;
-color: #2a2826;
-letter-spacing: 0.1em;
-pointer-events: none;
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.46rem;
+  color: #2a2826;
+  letter-spacing: 0.1em;
+  pointer-events: none;
 }
 
-/* – Tabs – */
+/* -- Tabs -- */
 nav#tabs {
-position: absolute;
-bottom: 0;
-left: 0;
-width: 100%;
-border-top: 1px solid #272727;
-display: -webkit-flex;
-display: flex;
-background-color: #141414;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-top: 1px solid #272727;
+  display: -webkit-flex;
+  display: flex;
+  background-color: #141414;
 }
 
 .tab {
--webkit-flex: 1;
-flex: 1;
-padding: 11px 0 13px;
-text-align: center;
-font-family: ‘Courier New’, monospace;
-font-size: 0.55rem;
-letter-spacing: 0.14em;
-text-transform: uppercase;
-color: #353230;
-cursor: pointer;
-border-top: 2px solid transparent;
--webkit-transition: color 0.2s, border-color 0.2s;
-transition: color 0.2s, border-color 0.2s;
-display: -webkit-flex;
-display: flex;
--webkit-flex-direction: column;
-flex-direction: column;
--webkit-align-items: center;
-align-items: center;
-gap: 4px;
--webkit-tap-highlight-color: transparent;
+  -webkit-flex: 1;
+  flex: 1;
+  padding: 11px 0 13px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #353230;
+  cursor: pointer;
+  border-top: 2px solid transparent;
+  -webkit-transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, border-color 0.2s;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 4px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tab svg {
-width: 16px;
-height: 16px;
-stroke: currentColor;
-fill: none;
-stroke-width: 1.5;
-stroke-linecap: round;
-stroke-linejoin: round;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .tab.active { color: #e6e2da; border-top-color: #65605a; }
 </style>
-
 </head>
 <body>
 
@@ -388,51 +386,44 @@ stroke-linejoin: round;
 <main>
   <div id="tuner-wrap">
 
-```
-<div id="note-display">
-  <span id="note-name"></span>
-  <span id="string-label"></span>
-</div>
+    <div id="note-display">
+      <span id="note-name"></span>
+      <span id="string-label"></span>
+    </div>
 
-<div id="meter-wrap">
-  <canvas id="meter-canvas" width="680" height="200"></canvas>
-  <div id="cents-display"></div>
-</div>
+    <div id="meter-wrap">
+      <canvas id="meter-canvas" width="680" height="200"></canvas>
+      <div id="cents-display"></div>
+    </div>
 
-<div id="strings"></div>
+    <div id="strings"></div>
 
-<div id="debug" style="display:none;"></div>
-```
+    <div id="debug" style="display:none;"></div>
 
   </div>
 </main>
 
 <!-- Chord panel -->
-
 <div id="chord-panel" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background-color:#141414; padding-top:60px; padding-bottom:56px; overflow-y:auto;">
 
   <!-- Chord selector -->
-
   <div id="chord-controls" style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:14px;padding:16px 20px 0;">
 
-```
-<!-- Type selector -->
-<div id="chord-type-tabs" style="display:-webkit-flex;display:flex;gap:0;border:1px solid #272727;">
-  <div class="chord-type-btn active-type" data-type="major" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#e6e2da;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;background-color:#212121;">Major</div>
-  <div class="chord-type-btn" data-type="minor" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Minor</div>
-  <div class="chord-type-btn" data-type="maj7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Maj7</div>
-  <div class="chord-type-btn" data-type="min7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;">Min7</div>
-</div>
+    <!-- Type selector -->
+    <div id="chord-type-tabs" style="display:-webkit-flex;display:flex;gap:0;border:1px solid #272727;">
+      <div class="chord-type-btn active-type" data-type="major" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#e6e2da;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;background-color:#212121;">Major</div>
+      <div class="chord-type-btn" data-type="minor" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Minor</div>
+      <div class="chord-type-btn" data-type="maj7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;border-right:1px solid #272727;">Maj7</div>
+      <div class="chord-type-btn" data-type="min7" style="font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.1em;color:#65605a;padding:8px 14px;cursor:pointer;">Min7</div>
+    </div>
 
-<!-- Root selector -->
-<div id="chord-root-row" style="display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;gap:6px;max-width:360px;">
-</div>
-```
+    <!-- Root selector -->
+    <div id="chord-root-row" style="display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;gap:6px;max-width:360px;">
+    </div>
 
   </div>
 
   <!-- Diagram display -->
-
   <div id="chord-display" style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;padding:20px 20px 0;gap:6px;">
     <div id="chord-name" style="font-family:Georgia,serif;font-size:2.2rem;font-weight:bold;color:#e6e2da;text-align:center;min-height:1.2em;"></div>
     <canvas id="chord-canvas" width="300" height="340" style="max-width:240px;display:block;"></canvas>
@@ -1178,6 +1169,5 @@ function renderChord() {
 // Initial render
 renderChord();
 </script>
-
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Uke Tuner
 
-**Version 1.5.1**
+**Version 1.6.0**
 
 A single-file browser-based ukulele tuner. No dependencies, no build step — open in any modern browser or host on GitHub Pages.
 
@@ -68,6 +68,14 @@ A single-file browser-based ukulele tuner. No dependencies, no build step — op
 -----
 
 ## Changelog
+
+### v1.6.0 — Lock-on-attack, chord tab, debug hidden
+
+- **Lock-on-attack tuning**: detects RMS spike indicating a new pluck, takes a clean reading over ~7 stable frames, then freezes the display for 600ms – needle no longer drifts as the string decays
+- **Chord tab**: 48 chords (12 roots x major/minor/maj7/min7) rendered as canvas fretboard diagrams with open string circles, finger dots with numbers, fret labels for higher position chords, and string name labels; root and type selectors above
+- **Detection pauses on chord tab**: `cancelAnimationFrame` called when switching away from tuner; resumes cleanly on return without releasing mic permission
+- Debug panel hidden (display:none)
+- All state vars (lockedCents, lockedIdx) reset on background pause
 
 ### v1.5.1 — Eliminated all non-ASCII characters from source
 
